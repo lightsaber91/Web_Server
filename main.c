@@ -6,16 +6,20 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <string.h>
+#include "./parser.c"
 
-char path[9] = "/var/www/";
+struct setting_info *setting_file;
 
 int main(void) {
-	const char ip[9] = "127.0.0.1";
+	setting_file = parse_config_file();
+
 	char request[3000], *line, *hostname, *useragent;
+
 	struct sockaddr_in skaddr;
 	skaddr.sin_family = AF_INET;
-	skaddr.sin_port = htons(8080);
-	inet_aton(ip, (struct in_addr *)&(skaddr.sin_addr.s_addr));
+	skaddr.sin_port = htons(setting_file->port);
+	inet_aton(setting_file->ip, (struct in_addr *)&(skaddr.sin_addr.s_addr));
+
 	int skt, new_fd, reuse = 1;
 	socklen_t len = sizeof(skaddr);
 
@@ -59,5 +63,5 @@ int main(void) {
 	if(close(skt) == -1) {
 		perror("in closing connection");
 	}
-	return EXIT_SUCCESS;	
+	return EXIT_SUCCESS;
 }
