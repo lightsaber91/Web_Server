@@ -7,16 +7,17 @@
 #include <netinet/in.h>
 #include <string.h>
 
-char path[8] = "/var/www/";
+char path[9] = "/var/www/";
 
 int main(void) {
-  const char ip[9] = "127.0.0.1";
+	const char ip[9] = "127.0.0.1";
 	char request[3000], *line, *hostname, *useragent;
 	struct sockaddr_in skaddr;
 	skaddr.sin_family = AF_INET;
 	skaddr.sin_port = htons(8080);
-	inet_aton("127.0.0.1", &skaddr.sin_addr.s_addr);
-	int skt, new_fd, reuse = 1, len = sizeof(skaddr);
+	inet_aton(ip, (struct in_addr *)&(skaddr.sin_addr.s_addr));
+	int skt, new_fd, reuse = 1;
+	socklen_t len = sizeof(skaddr);
 
 	skt = socket(AF_INET,SOCK_STREAM,0);
 	if(skt == -1) {
@@ -55,6 +56,8 @@ int main(void) {
 		printf("%s\n%s\n%s\n",line,hostname,useragent);
 	}
 
-	if(close(skt) == -1);
+	if(close(skt) == -1) {
+		perror("in closing connection");
+	}
 	return EXIT_SUCCESS;	
 }
