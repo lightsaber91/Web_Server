@@ -5,7 +5,7 @@
 const char *config_path = "/home/lightsaber/devel/Web_Server/config.ini";
 
 struct setting_info {
-  char *ip;
+	char *ip;
 	int port;
 	char *root_folder;
 };
@@ -43,24 +43,24 @@ struct setting_info *parse_config_file ()
 				}
 				s->ip = ip_t;
 			}
-      if(strncmp(line, "PORT=", 5) == 0) {
-        int i = 5;
+			if(strncmp(line, "PORT=", 5) == 0) {
+        			int i = 5;
 				char port_t[strlen(line)-i];
-        while(line[i] != ';') {
-          port_t[i-5] = line[i];
-          i++;
-        }
+        			while(line[i] != ';') {
+        				port_t[i-5] = line[i];
+        				i++;
+        			}
 				s->port = atoi(port_t);
-      }
-      if(strncmp(line, "ROOT_FOLDER=", 11) == 0) {
-        int i = 11;
-        char root_t[strlen(line)-i];
-        while(line[i] != ';') {
-          root_t[i-11] = line[i];
-          i++;
-        }
-        s->root_folder = root_t;
-      }
-    }
+      			}
+      			if(strncmp(line, "ROOT_FOLDER=", 11) == 0) {
+        			int i = 11;
+        			char root_t[strlen(line)-i];
+        			while(line[i] != ';') {
+        				root_t[i-11] = line[i];
+        				i++;
+        			}
+        			s->root_folder = root_t;
+      			}
+    		}
 	}
 }
