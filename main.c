@@ -6,15 +6,26 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <string.h>
-#include "./parser.c"
+#include "./read_config.c"
+#include <sys/sendfile.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <string.h>
+#include "./parse_request.c"
 
 struct setting_info *setting_file;
 
 int main(void) {
 	setting_file = parse_config_file();
 
-	char request[3000], *line, *hostname, *useragent;
-
+/*
+	int fd = open("/var/www/prova.png", O_RDONLY);
+	long lenfile = (long)lseek(fd, (off_t)0, SEEK_END);
+	(void)lseek(fd, (off_t)0, SEEK_SET);
+	static char header[8096];
+	int ret = 0;
+*/
+	char request[3000];
 	struct sockaddr_in skaddr;
 	skaddr.sin_family = AF_INET;
 	skaddr.sin_port = htons(setting_file->port);
@@ -54,10 +65,21 @@ int main(void) {
 			perror("in read");
 			return EXIT_FAILURE;
 		}
-		line = strtok(request, "\n\r");
-		hostname = strtok(NULL, "\n\r");
-		useragent = strtok(NULL, "\n\r");
-		printf("%s\n%s\n%s\n",line,hostname,useragent);
+		struct browser_request *_request;
+		printf("%s",request);
+		_request = parse_browser_request(request);
+		printf("%s\n", _request->user_agent);
+/*
+		(void)sprintf(header,"HTTP/1.1 200 OK\nServer: web_prova\nContent-Length: %ld\nConnection: close\nContent-Type: image/png\n\n",lenfile);
+		write(new_fd, header, strlen(header));
+		while (	(ret = read(fd, header, 8096)) > 0 ) {
+			write(new_fd,header,ret);
+		}
+		sleep(1);
+		//(void)lseek(fd, (off_t)0, SEEK_SET);
+
+*/
+		close(new_fd);
 	}
 
 	if(close(skt) == -1) {
