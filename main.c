@@ -80,6 +80,7 @@ int main(void) {
 
 */
 		close(new_fd);
+		free(_request);
 	}
 
 	if(close(skt) == -1) {
