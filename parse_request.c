@@ -3,21 +3,39 @@
 #include <string.h>
 
 struct browser_request {
-  char *metod;
+	char *method;
 	char *file_requested;
 	char *user_agent;
 	char *connection_type;
 	char *http_version;
+	char *host;
+	char *accept_type;
 };
 
 void parse_request(char *line, struct browser_request *request) {
-        char *usless;
         if(strncmp(line, "User-Agent: ", 12) == 0) {
-                usless = strtok(line, ": ");
-                request->user_agent = strtok(NULL, "\n\r");
+                strtok(line, " ");
+		request->user_agent = strtok(NULL, "\n\r");
+        }
+	else if(strncmp(line, "Connection: ", 12) == 0) {
+		strtok(line, " ");
+		request->connection_type = strtok(NULL, "\n\r");
+	}
+        else if(strncmp(line, "Host: ", 6) == 0) {
+                strtok(line, " ");
+                request->host = strtok(NULL, "\n\r");
+        }
+        else if(strncmp(line, "Accept: ", 8) == 0) {
+                strtok(line, " ");
+                request->accept_type = strtok(NULL, "\n\r");
         }
 }
 
+void parse_first_line(char *line, struct browser_request *request) {
+	request->method = strtok(line, " ");
+	request->file_requested = strtok(NULL, " ");
+	request->http_version = strtok(NULL, "\n\r");
+}
 
 struct browser_request *parse_browser_request(char *message) {
 	struct browser_request *request;
@@ -28,9 +46,10 @@ struct browser_request *parse_browser_request(char *message) {
 	}
 	char *line, *save_pointer;
 	line = strtok_r(message, "\n\r", &save_pointer);
+	parse_first_line(line, request);
 	while((line = strtok_r(NULL, "\n\r", &save_pointer)) != NULL) {
-		printf("%s\n", line);
 		parse_request(line, request);
 	}
+	printf("%s\n%s\n%s\n%s\n%s\n%s\n%s\n", request->method, request->file_requested, request->user_agent, request->connection_type, request->http_version, request->host, request->accept_type);
 	return request;
 }
