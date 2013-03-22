@@ -12,12 +12,12 @@
 #include <fcntl.h>
 #include <string.h>
 #include "./parse_request.c"
+#include <errno.h>
 
-struct setting_info *setting_file;
+static struct setting_info *setting_file;
 
-int main(void) {
+int main() {
 	setting_file = parse_config_file();
-
 /*
 	int fd = open("/var/www/prova.png", O_RDONLY);
 	long lenfile = (long)lseek(fd, (off_t)0, SEEK_END);
@@ -27,25 +27,25 @@ int main(void) {
 */
 	char request[3000];
 	struct sockaddr_in skaddr;
+	int skt, new_fd, reuse = 1;
+
+        skt = socket(AF_INET,SOCK_STREAM,0);
+        if(skt == -1) {
+                perror("in socket initialization");
+                return (EXIT_FAILURE);
+        }
+	socklen_t len = sizeof(skaddr);
+	memset((void *) &skaddr, 0, len);
 	skaddr.sin_family = AF_INET;
 	skaddr.sin_port = htons(setting_file->port);
-	inet_aton(setting_file->ip, (struct in_addr *)&(skaddr.sin_addr.s_addr));
-
-	int skt, new_fd, reuse = 1;
-	socklen_t len = sizeof(skaddr);
-
-	skt = socket(AF_INET,SOCK_STREAM,0);
-	if(skt == -1) {
-		perror("in socket initialization");
-		return (EXIT_FAILURE);
-	}
+	inet_aton((const char *)setting_file->ip, (struct in_addr *)&(skaddr.sin_addr.s_addr));
 
 	if(setsockopt(skt, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(int)) < 0) {
 		perror("in setsockopt");
 		return(EXIT_FAILURE);
 	}
 
-	if(bind(skt, (struct sockaddr*)&skaddr, sizeof(skaddr)) == -1){
+	if(bind(skt, (struct sockaddr *)&skaddr, sizeof(skaddr)) == -1){
 		perror("ip address and port probably in use!!!");
 		return(EXIT_FAILURE);
 	}
@@ -65,10 +65,10 @@ int main(void) {
 			perror("in read");
 			return EXIT_FAILURE;
 		}
-		struct browser_request *_request;
-		printf("%s",request);
+		static struct browser_request *_request;
+//		printf("%s",request);
 		_request = parse_browser_request(request);
-		printf("%s\n", _request->user_agent);
+//		printf("%s\n", _request->user_agent);
 /*
 		(void)sprintf(header,"HTTP/1.1 200 OK\nServer: web_prova\nContent-Length: %ld\nConnection: close\nContent-Type: image/png\n\n",lenfile);
 		write(new_fd, header, strlen(header));
