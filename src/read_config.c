@@ -1,20 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#define conf_file "./server.conf"
-
-struct server_setting {
-	char *ip;
-	char *root_folder;
-	char *log_path;
-	int port;
-	int log_lvl;
-	int min_thread;
-	int max_thread;
-	int min_process;
-	int max_process;
-};
+#include "../lib/config.h"
 
 void write_parameter(char *line, struct server_setting *s) {
 
@@ -25,6 +9,10 @@ void write_parameter(char *line, struct server_setting *s) {
 	else if ( strncmp(line, "ROOT_FOLDER=", 12 ) == 0) {
 		strtok(line, "=");
 		s->root_folder = strtok(NULL, ";");
+	}
+	else if ( strncmp(line, "HOME_PAGE=", 10 ) == 0 ) {
+		strtok(line, "=");
+		s->home_page = strtok(NULL, ";");
 	}
 	else if ( strncmp(line, "LOG_PATH=", 9 ) == 0 ) {
 
@@ -68,7 +56,7 @@ struct server_setting *parse_config_file() {
 		exit(EXIT_FAILURE);
 	}
 
-	size_t n = 100;
+	size_t n = 10;
 
 	FILE *conf = fopen(conf_file, "r");
 	if(conf == NULL) {
@@ -85,7 +73,7 @@ struct server_setting *parse_config_file() {
 			//exit(EXIT_FAILURE);
 		}
 
-		if(strncmp(line, "EOF" ,3) == 0 ) {
+		if( strncmp(line, "EOF" ,3) == 0 ) {
 			break;
 		}
 
