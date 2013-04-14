@@ -5,7 +5,7 @@
 #define conf_file "./server.conf"
 
 typedef struct server_setting {
-  char *ip;
+	char *ip;
 	char *root_folder;
 	char *home_page;
 	char *log_path;
