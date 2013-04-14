@@ -18,6 +18,7 @@
 #include "../src/responses.c"
 
 #define BACKLOG 10
+#define REQ_SIZE 100
 
 //Struct for saving setting
 struct server_setting *setting;
@@ -26,10 +27,16 @@ struct server_setting *setting;
 int skt_lst, skt_accpt;
 struct sockaddr_in skaddr;
 socklen_t socksize;
+struct timeval timeout;
+int enable_keep_alive = 1;
 
 //Log File Stuff
 int LogFile;
 
 void create_and_bind();
 
-char *concatenation (struct browser_request *request, struct server_setting *setting);
+void concatenation (struct browser_request *request, struct server_setting *setting);
+
+int read_request(int sockfd, char *buf);
+
+void config_socket();
