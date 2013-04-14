@@ -4,8 +4,6 @@ int main() {
 
 	bool toLog = false;
 
-	char in_request[3000];
-
 	setting = parse_config_file();
 
 	if( setting->log_lvl > -1 ) {
@@ -13,13 +11,14 @@ int main() {
 		toLog = true;
 	}
 
+        timeout.tv_sec = 10;
+        timeout.tv_usec = 0;
+
+
 	create_and_bind();
 
-	struct timeval timeout;
-	timeout.tv_sec = 10;
-	timeout.tv_usec = 0;
-
 	for(;;) {
+
 
 		if(listen(skt_lst, BACKLOG) == -1) {
 			perror("in listen");
@@ -30,30 +29,26 @@ int main() {
 			perror("in accepting request");
 			return(EXIT_FAILURE);
 		}
-		if(setsockopt(skt_accpt, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout)) < 0)
-        	{
-			printf("Cannot Set SO_RCVTIMEO for socket\n");
-        	}
+		char *in_request = (char *)malloc(REQ_SIZE*sizeof(char));
+		config_socket(skt_accpt);
 
-		if(read(skt_accpt, in_request, 3000) <= 0) {
-			error_408(skt_accpt);
-		}
+		while(read_request(skt_accpt, in_request) == 1) {
 
-		else {
 			struct browser_request *request;
 			request = parse_browser_request(in_request);
 
-			char *rootFile = concatenation(request, setting);
+			concatenation(request, setting);
 
 			if(setting->log_lvl > 0) {
 				writeConnectionLog(LogFile, request);
 			}
+			respond(skt_accpt, request, toLog, LogFile);
 
-			respond(skt_accpt, request, rootFile, toLog, LogFile);
 			free(request);
+			in_request = (char *)realloc(in_request, REQ_SIZE*sizeof(char));
 		}
+		free(in_request);
 		close(skt_accpt);
-
 	}
 
 	if(close(skt_lst) == -1) {
@@ -63,25 +58,62 @@ int main() {
 
 }
 
-char *concatenation (struct browser_request *request, struct server_setting *setting) {
+void config_socket(int sockfd) {
+
+	if(setsockopt(sockfd, SOL_SOCKET, SO_KEEPALIVE, &enable_keep_alive, sizeof(int)) < 0) {
+		perror("SO_KEEPALIVE");
+	}
+	if(setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout)) < 0) {
+                perror("SO_RCVTIMEO");
+        }
+
+}
+
+int read_request(int sockfd, char *buf) {
+
+	int rec = 0, byteread = 0;
+	int r_max = REQ_SIZE;
+	do {
+		rec = recv(sockfd, buf+byteread, r_max-byteread, 0);
+		byteread += rec;
+		if(buf[byteread-1] == '\n' && buf[byteread-2] == '\r' && buf[byteread-3] == '\n' && buf[byteread-4] == '\r') {
+			return 1;
+		}
+		if(byteread == r_max) {
+			r_max *= 2; 
+			buf = (char *)realloc(buf, r_max*sizeof(char));
+			if(buf == NULL) {
+				perror("realloc");
+			}
+		}
+		usleep(1);
+
+	}while(rec > 0);
+	if(sockfd == fcntl(sockfd, F_GETFD)) {
+		error_408(sockfd);
+	}
+	return 0;
+}
+
+void concatenation (struct browser_request *request, struct server_setting *setting) {
 
 	if(strcmp(request->file_requested, "/") == 0) {
 		char *rootFile = malloc(strlen(setting->root_folder)+strlen(setting->home_page)+1);
 		if(rootFile == NULL) {
-			perror("in malloc");	
+			perror("in malloc");
 		}
 		rootFile = strcat(rootFile, setting->root_folder);
 		rootFile = strcat(rootFile, setting->home_page);
-		return rootFile;
+		request->file_requested = rootFile;
 	}
 	else {
 		char *rootFile = malloc(strlen(setting->root_folder)+strlen(request->file_requested)+1);
 		if(rootFile == NULL) {
-			perror("in malloc");	
+			perror("in malloc");
 		}
 		rootFile = strcat(rootFile, setting->root_folder);
 		rootFile = strcat(rootFile, request->file_requested);
-		return rootFile;
+		request->file_requested = rootFile;
 	}
 
 }
