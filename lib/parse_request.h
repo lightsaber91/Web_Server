@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef struct browser_request {
-  char *method;
+typedef struct browser_request{
+	char *method;
 	char *file_requested;
 	char *user_agent;
 	char *connection_type;
