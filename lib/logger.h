@@ -11,3 +11,5 @@
 int openLogFile(char *path);
 
 void writeConnectionLog(int log, struct browser_request *request);
+
+

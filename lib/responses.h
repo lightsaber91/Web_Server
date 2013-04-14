@@ -6,7 +6,7 @@
 
 //Struct used for type file
 typedef struct extn{
-  char *ext;
+	char *ext;
 	char *mediatype;
 } extn;
 

@@ -254,7 +254,7 @@ int supported_type(char *extension, char *file) {
 	strtok(ap, ".");
 	char *type = strtok(NULL, "\n");
 	int i;
-	for(i = 0; i<14; i++) {
+	for(i = 0; i<13; i++) {
 		if (strcmp(type, extensions[i].ext) == 0) {
 			extension = extensions[i].mediatype;
 			return 1;
