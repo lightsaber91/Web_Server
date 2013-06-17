@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include "../src/resize.c"
 
 //Struct used for type file
 typedef struct extn{
@@ -29,7 +30,7 @@ extn extensions[] ={
  {0,0} };
 
 //Verify if file is supported from server
-int supported_type(char *extension, char *file);
+char *supported_type(char *file);
 
 
 //Error Type:
@@ -45,4 +46,4 @@ void send_header(int sockfd, char *file);
 void send_file(int sockfd, char *file, char *ext);
 
 //Generic answer
-void respond(int sockfd, struct browser_request *request, bool toLog, int logFile);
+int respond(int sockfd, struct browser_request *request, bool toLog, int logFile);
