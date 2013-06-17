@@ -1,7 +1,8 @@
 #include "../lib/main.h"
-
+#include "thread.c"
+#include <libxml/xmlmemory.h>
+#include <libxml/parser.h>
 int main() {
-
 	bool toLog = false;
 
 	setting = parse_config_file();
@@ -10,10 +11,6 @@ int main() {
 		LogFile = openLogFile(setting->log_path);
 		toLog = true;
 	}
-
-        timeout.tv_sec = 10;
-        timeout.tv_usec = 0;
-
 
 	create_and_bind();
 
@@ -29,8 +26,18 @@ int main() {
 			perror("in accepting request");
 			return(EXIT_FAILURE);
 		}
+		struct thread_job *job = malloc(sizeof(struct thread_job));
+		job->s = setting;
+		job->socket = skt_accpt;
+		job->toLog = toLog;
+		job->LogFile = LogFile;
+
+		pthread_create(&job->tid, NULL, my_thread, job);
+/*
+		timeout.tv_sec = setting->timeout;
+	        timeout.tv_usec = 0;
 		char *in_request = (char *)malloc(REQ_SIZE*sizeof(char));
-		config_socket(skt_accpt);
+		config_socket(skt_accpt, setting->KeepAlive);
 
 		while(read_request(skt_accpt, in_request) == 1) {
 
@@ -49,8 +56,7 @@ int main() {
 		}
 		free(in_request);
 		close(skt_accpt);
-	}
-
+*/	}
 	if(close(skt_lst) == -1) {
 		perror("in closing connection");
 	}
@@ -58,26 +64,48 @@ int main() {
 
 }
 
-void config_socket(int sockfd) {
+void ConfigKeepAliveTimeout(int sockfd, int KeepAliveTimeout) {
 
-	if(setsockopt(sockfd, SOL_SOCKET, SO_KEEPALIVE, &enable_keep_alive, sizeof(int)) < 0) {
-		perror("SO_KEEPALIVE");
+	timeout.tv_sec = KeepAliveTimeout;
+        timeout.tv_usec = 0;
+
+	if(setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout)) < 0) {
+                perror("SO_RCVTIMEO");
+        }
+	if(setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout, sizeof(timeout)) < 0) {
+                perror("SO_SNDTIMEO");
+        }
+}
+
+void config_socket(int sockfd, bool KeepAlive) {
+
+	if(KeepAlive == true) {
+		if(setsockopt(sockfd, SOL_SOCKET, SO_KEEPALIVE, &enable_keep_alive, sizeof(int)) < 0) {
+			perror("SO_KEEPALIVE");
+		}
 	}
 	if(setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout)) < 0) {
                 perror("SO_RCVTIMEO");
         }
+	if(setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout, sizeof(timeout)) < 0) {
+                perror("SO_SNDTIMEO");
+        }
 
 }
 
-int read_request(int sockfd, char *buf) {
+int read_request(int sockfd, char *buf, bool req) {
 
 	int rec = 0, byteread = 0;
 	int r_max = REQ_SIZE;
 	do {
 		rec = recv(sockfd, buf+byteread, r_max-byteread, 0);
-		byteread += rec;
-		if(buf[byteread-1] == '\n' && buf[byteread-2] == '\r' && buf[byteread-3] == '\n' && buf[byteread-4] == '\r') {
-			return 1;
+		if(strcmp(buf, "\r\n") != 0) {
+			byteread += rec;
+			if(byteread > 4) {
+				if(buf[byteread-1] == '\n' && buf[byteread-2] == '\r' && buf[byteread-3] == '\n' && buf[byteread-4] == '\r') {
+					return 1;
+				}
+			}
 		}
 		if(byteread == r_max) {
 			r_max *= 2; 
@@ -89,7 +117,7 @@ int read_request(int sockfd, char *buf) {
 		usleep(1);
 
 	}while(rec > 0);
-	if(sockfd == fcntl(sockfd, F_GETFD)) {
+	if(req == true) {
 		error_408(sockfd);
 	}
 	return 0;
@@ -102,8 +130,7 @@ void concatenation (struct browser_request *request, struct server_setting *sett
 		if(rootFile == NULL) {
 			perror("in malloc");
 		}
-		rootFile = strcat(rootFile, setting->root_folder);
-		rootFile = strcat(rootFile, setting->home_page);
+		sprintf(rootFile, "%s%s", setting->root_folder, setting->home_page);
 		request->file_requested = rootFile;
 	}
 	else {
@@ -111,8 +138,7 @@ void concatenation (struct browser_request *request, struct server_setting *sett
 		if(rootFile == NULL) {
 			perror("in malloc");
 		}
-		rootFile = strcat(rootFile, setting->root_folder);
-		rootFile = strcat(rootFile, request->file_requested);
+		sprintf(rootFile, "%s%s", setting->root_folder, request->file_requested);
 		request->file_requested = rootFile;
 	}
 

@@ -44,7 +44,40 @@ void write_parameter(char *line, struct server_setting *s) {
 		}
 
 	}
+	else if ( strncmp(line, "KEEPALIVE=", 10) == 0 ) {
 
+		strtok(line, "=");
+		char *keepAlive_t = strtok(NULL, ";");
+		if ( strncmp(keepAlive_t, "ON", 2) == 0 ) {
+			s->KeepAlive = true;
+		}
+		else {
+			s->KeepAlive = false;
+		}
+
+	}
+	else if ( strncmp(line, "TIMEOUT=", 8) == 0 ) {
+
+		strtok(line, "=");
+		char *timeout_t = strtok(NULL, ";");
+		s->timeout = atoi(timeout_t);
+
+	}
+
+	else if ( strncmp(line, "KEEPALIVE_REQ=", 14) == 0 ) {
+
+		strtok(line, "=");
+		char *req_t = strtok(NULL, ";");
+		s->MaxKeepAliveReq = atoi(req_t);
+
+	}
+	else if ( strncmp(line, "KEEPALIVE_TIMEOUT=", 18) == 0 ) {
+
+		strtok(line, "=");
+		char *K_timeout = strtok(NULL, ";");
+		s->KeepAliveTimeout = atoi(K_timeout);
+
+	}
 }
 
 struct server_setting *parse_config_file() {
@@ -70,7 +103,6 @@ struct server_setting *parse_config_file() {
 
 		if(getdelim(&line, &n, '\n', conf) == -1) {
 			perror("in getdelim");
-			//exit(EXIT_FAILURE);
 		}
 
 		if( strncmp(line, "EOF" ,3) == 0 ) {

@@ -1,13 +1,10 @@
 #include "../lib/responses.h"
+#include "parser.c"
 
 void error_505(int sockfd) {
 
-	char message[1000];
-	char header[1000];
-	if(sprintf(message, "<html><head>\n<title>505 Http Version Not Supported</title>\n</head><body>\n<h1>Http Version Not Supported</h1>\n</body></html>\n") < 0) {
-		perror("in sprintf");
-		return;
-	} 
+	char *message = "<html><head>\n<title>505 Http Version Not Supported</title>\n</head><body>\n<h1>Http Version Not Supported</h1>\n</body></html>\n";
+	char header[strlen(message)+sizeof(long int)];
 	if(sprintf(header, "HTTP/1.1 505 Http Version Not Supported\nServer: Prova\nContenent-Length: %ld\nConnection: close\nContent-Type: text/html\n\n",(long int) strlen(message)) < 0) {
 		perror("in sprintf");
 		return;
@@ -186,13 +183,13 @@ void send_file(int sockfd, char *file, char *ext) {
 		exit(EXIT_FAILURE);
 	}
 	int ret = 0;
-	char header[8096];
+	char header[250];
 	sprintf(header,"HTTP/1.1 200 OK\nServer: web_prova\nContent-Length: %ld\nConnection: Keep-Alive\nContent-Type: %s\n\n",lenfile, ext);
 	if(send(sockfd, header, strlen(header), 0) == -1) {
 		perror("sending file");
 		return;
 	}
-	while ((ret = read(fd, header, 8096)) > 0 ){
+	while ((ret = read(fd, header,250)) > 0 ){
 		if(send(sockfd,header,ret, 0) == -1) {
 			perror("in send");
 			return;
@@ -200,13 +197,25 @@ void send_file(int sockfd, char *file, char *ext) {
 	}
 }
 
-void respond(int sockfd, struct browser_request *request, bool toLog, int logFile) {
+void send_image(int sockfd, char *file, char *ext, char *user_agent) {
+
+	if(parse_UA(user_agent) == 0) {
+		char *resized = (char *)resize(file);
+		send_file(sockfd, resized, ext);
+	}
+	else
+		send_file(sockfd, file, ext);
+}
+
+int respond(int sockfd, struct browser_request *request, bool toLog, int logFile) {
+
 
 	if(strcmp(request->http_version, "HTTP/1.0") != 0 && strcmp(request->http_version, "HTTP/1.1") != 0) {
 		error_505(sockfd);
 		if(toLog) {
 			writeErrorLog("505 Http Version Not Supported", request, logFile);
 		}
+		return -1;
 	}
 
 	else if(strncmp(request->file_requested, "../", 3) == 0) {
@@ -214,6 +223,7 @@ void respond(int sockfd, struct browser_request *request, bool toLog, int logFil
 		if(toLog) {
 			writeErrorLog("403 Forbidden", request, logFile);
 		}
+		return -1;
 	}
 
 	else if(strcmp(request->method, "GET") != 0 && strcmp(request->method, "HEAD") != 0  && strcmp(request->method, "get") != 0  && strcmp(request->method, "head") != 0) {
@@ -221,13 +231,18 @@ void respond(int sockfd, struct browser_request *request, bool toLog, int logFil
 		if(toLog) {
 			writeErrorLog("400 Bad Request", request, logFile);
 		}
+		return -1;
 	}
 
 	else {
+		char *extension = supported_type(request->file_requested);
 
-		char *extension = "";
-		if(supported_type(extension, request->file_requested) == 0) {
+		if(extension == NULL) {
 			error_415(sockfd);
+			if(toLog) {
+				writeErrorLog("415 Unsupported Media Type", request, logFile);
+			}
+			return -1;
 		}
 
 		else if(access(request->file_requested, R_OK) == -1) {
@@ -235,31 +250,43 @@ void respond(int sockfd, struct browser_request *request, bool toLog, int logFil
 			if(toLog) {
 				writeErrorLog("404 File Not Found", request, logFile);
 			}
+			return 0;
 		}
 
 		else if(strcmp(request->method, "HEAD") == 0 || strcmp(request->method, "head") == 0) {
 			send_header(sockfd, request->file_requested);
+			return -1;
 		}
 
 		else {
-			send_file(sockfd, request->file_requested, extension);
+			if(strncmp(extension, "image", 5) == 0) {
+				send_image(sockfd, request->file_requested, extension, request->user_agent);
+			}
+			else 
+				send_file(sockfd, request->file_requested, extension);
+			return 0;
 		}
 	}
+	return -1;
 }
 
-int supported_type(char *extension, char *file) {
-	(void) extension;
-	char *ap = malloc(strlen(file));
-	strcpy(ap, file);
-	strtok(ap, ".");
-	char *type = strtok(NULL, "\n");
+char *supported_type(char *file) {
+	char *extension = malloc(1);
+	char *ap = strrchr(file, '.');
+	if(ap == NULL) {
+		return "";
+	}
+	char *type = malloc(strlen(ap));
+	sprintf(type, "%s", ap+1);
 	int i;
-	for(i = 0; i<13; i++) {
+	if(type == NULL)
+		return "";
+	for(i = 0; extensions[i].ext != NULL; i++) {
 		if (strcmp(type, extensions[i].ext) == 0) {
+			extension = realloc(extension, sizeof(extensions[i].mediatype)); 
 			extension = extensions[i].mediatype;
-			return 1;
+			return extension;
 		}
 	}
-	return 0;
-
+	return NULL;
 }
