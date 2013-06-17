@@ -18,7 +18,7 @@
 #include "../src/responses.c"
 
 #define BACKLOG 10
-#define REQ_SIZE 100
+#define REQ_SIZE 1000
 
 //Struct for saving setting
 struct server_setting *setting;
@@ -32,11 +32,13 @@ int enable_keep_alive = 1;
 
 //Log File Stuff
 int LogFile;
-
+//int nthread = 0;
 void create_and_bind();
 
 void concatenation (struct browser_request *request, struct server_setting *setting);
 
-int read_request(int sockfd, char *buf);
+int read_request(int sockfd, char *buf, bool req);
 
-void config_socket();
+void ConfigKeepAliveTimeout(int sockfd, int KeepAliveTimeout);
+
+void config_socket(int sockfd, bool KeepAlive);

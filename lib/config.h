@@ -11,10 +11,14 @@ typedef struct server_setting {
 	char *log_path;
 	int port;
 	int log_lvl;
-	int min_thread;
-	int max_thread;
-	int min_process;
-	int max_process;
+	int timeout;
+	bool KeepAlive;
+	int MaxKeepAliveReq;
+	int KeepAliveTimeout;
+	int MinThread;
+	int MaxTread;
+	int MinProcess;
+	int MaxProcess;
 } server_setting;
 
 void write_parameter(char *line, struct server_setting *s);
