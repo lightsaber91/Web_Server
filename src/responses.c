@@ -259,7 +259,7 @@ int respond(int sockfd, struct browser_request *request, bool toLog, int logFile
 		}
 
 		else {
-			if(strncmp(extension, "image", 5) == 0) {
+			if(strncmp(extension, "image", 5) == 0 && use_wurfl == true) {
 				send_image(sockfd, request->file_requested, extension, request->user_agent);
 			}
 			else 
