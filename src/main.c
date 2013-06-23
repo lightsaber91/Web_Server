@@ -2,7 +2,9 @@
 #include "thread.c"
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
+
 int main() {
+	
 	bool toLog = false;
 
 	setting = parse_config_file();
@@ -11,7 +13,8 @@ int main() {
 		LogFile = openLogFile(setting->log_path);
 		toLog = true;
 	}
-
+	if(use_wurfl == true)
+		printf("%s\n", wurfl_location);
 	create_and_bind();
 
 	for(;;) {
