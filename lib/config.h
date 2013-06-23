@@ -1,6 +1,5 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+extern char *wurfl_location;
+extern bool use_wurfl;
 
 #define conf_file "./server.conf"
 
