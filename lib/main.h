@@ -20,8 +20,10 @@
 #define BACKLOG 10
 #define REQ_SIZE 1000
 
-//Struct for saving setting
+//Settings Variable
 struct server_setting *setting;
+char *wurfl_location;
+bool use_wurfl;
 
 //Socket Stuff
 int skt_lst, skt_accpt;
