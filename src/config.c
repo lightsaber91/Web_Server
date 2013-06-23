@@ -24,6 +24,19 @@ void write_parameter(char *line, struct server_setting *s) {
 			s->log_path = strtok(NULL, ";");
 		}
 	}
+	else if ( strncmp(line, "WURFL_PATH=", 11) == 0 ) {
+		strtok(line, "=");
+		wurfl_location = malloc(strlen(line));
+		wurfl_location = strtok(NULL, ";");
+	}
+	else if ( strncmp(line, "RESIZING=", 9 ) == 0 ) {
+		if(strncmp(line, "RESIZING=ON", 11) == 0) {
+			use_wurfl = true;
+		}
+		else {
+			use_wurfl = false;
+		}
+	}
 	else if ( strncmp(line, "PORT=", 5) == 0 ) {
 		strtok(line, "=");
 		char *port_t = strtok(NULL, ";");
