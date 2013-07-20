@@ -31,7 +31,6 @@ void *manage_connection(void *p){
 	if(in_request == NULL) {
 		perror("Memory Allocation Failure\n");
 		close(job->socket);
-		free(request);
 		pthread_exit(NULL);
 	}
 
