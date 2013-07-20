@@ -1,7 +1,4 @@
-#include <wand/magick_wand.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
+#include "../lib/resize.h"
 
 char *cut_name(char *file, char *ext) {
 	int i = strlen(file) - strlen(ext);

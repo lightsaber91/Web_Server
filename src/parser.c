@@ -1,10 +1,4 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <libxml/xmlmemory.h>
-#include <libxml/parser.h>
-#include <string.h>
-#include <ctype.h>
+#include "../lib/parser.h"
 
 int findDeviceNodeByUserAgent(xmlNode *node, char *header_useragent)
 {
@@ -22,6 +16,7 @@ int findDeviceNodeByUserAgent(xmlNode *node, char *header_useragent)
             //compare the given user-agent with the one of the selected device element
             if (strstr((char *)user_agent, header_useragent) != NULL) {
                 //ok, device found, returning...
+		property.device = cur;
                 xmlFree(user_agent);
 		return 0;
                 //return cur;
@@ -48,6 +43,16 @@ void reduce_user_agent(char *user_agent) {
 	}
     	end--;
     	*(end+1) = '\0';
+}
+
+char *getDeviceId(xmlNode *device)
+{
+    return (char *)xmlGetProp((device), (const xmlChar *)"id");
+}
+
+char *getDeviceFallBackId(xmlNode *device)
+{
+    return (char *)xmlGetProp((device), (const xmlChar *)"fall_back");
 }
 
 int parse_UA(char *user_agent) {
@@ -83,6 +88,10 @@ int parse_UA(char *user_agent) {
 	while(user_agent != NULL) {
 		reduce_user_agent(user_agent);
 		if(findDeviceNodeByUserAgent(cur, user_agent) == 0) {
+			property.device_id = getDeviceId(property.device);
+			property.device_fallback_id = getDeviceFallBackId(property.device);
+
+			printf("%s\n\n%s\n", property.device_id, property.device_fallback_id);
 			return 0;
 		}
 		

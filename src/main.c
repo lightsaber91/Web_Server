@@ -1,7 +1,4 @@
 #include "../lib/main.h"
-#include "thread.c"
-#include <libxml/xmlmemory.h>
-#include <libxml/parser.h>
 
 int main() {
 	
@@ -13,8 +10,6 @@ int main() {
 		LogFile = openLogFile(setting->log_path);
 		toLog = true;
 	}
-	if(use_wurfl == true)
-		printf("%s\n", wurfl_location);
 	create_and_bind();
 
 	for(;;) {

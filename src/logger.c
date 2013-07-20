@@ -1,5 +1,4 @@
 #include "../lib/logger.h"
-#include <sys/file.h>
 
 int openLogFile(char *path) {
 	int log = open(path, O_CREAT | O_APPEND | O_RDWR, 0644);

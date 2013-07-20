@@ -12,6 +12,8 @@
 #include <string.h>
 #include <errno.h>
 #include <stdbool.h>
+#include <libxml/xmlmemory.h>
+#include <libxml/parser.h>
 #include "../src/config.c"
 #include "../src/parse_request.c"
 #include "../src/logger.c"
@@ -35,6 +37,7 @@ int enable_keep_alive = 1;
 //Log File Stuff
 int LogFile;
 //int nthread = 0;
+
 void create_and_bind();
 
 void concatenation (struct browser_request *request, struct server_setting *setting);
@@ -44,3 +47,5 @@ int read_request(int sockfd, char *buf, bool req);
 void ConfigKeepAliveTimeout(int sockfd, int KeepAliveTimeout);
 
 void config_socket(int sockfd, bool KeepAlive);
+
+#include "../src/thread.c"

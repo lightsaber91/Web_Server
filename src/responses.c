@@ -1,5 +1,4 @@
 #include "../lib/responses.h"
-#include "parser.c"
 
 void error_505(int sockfd) {
 

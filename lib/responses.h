@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include "../src/parser.c"
 #include "../src/resize.c"
 
 //Struct used for type file
