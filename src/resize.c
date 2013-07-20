@@ -11,11 +11,19 @@ char *resize(char *file)
 
 	char *ap = strrchr(file, '.');
 	char *ext = malloc(strlen(ap) +1);
+	if(ext = NULL) {
+		perror("Memory Allocation Failure\n");
+		return file;
+	}
 	if(strcpy(ext, ap) == NULL) {
 		perror("In strcpy");
 		return file;
 	}
 	char *no_ext = malloc(strlen(file));
+	if(no_ext == NULL) {
+		perror("Memory Allocation Failure\n");
+		return file;
+	}
 	MagickWand *m_wand = NULL;
 
 	int width,height;
@@ -29,7 +37,14 @@ char *resize(char *file)
 
 	no_ext = cut_name(file, ap);
 	char *img_resized = malloc(strlen(no_ext)+strlen("_resized")+strlen(ext)+1);
-	sprintf(img_resized, "%s_resized%s", no_ext, ext);
+	if(img_resized == NULL) {
+		perror("Memory Allocation Failure\n");
+		return file;
+	}
+	if(sprintf(img_resized, "%s_resized%s", no_ext, ext) < 0) {
+		perror("In sprintf: nothing written\n");
+		return file;
+	}
 
 	if(access(img_resized, F_OK) == 0) {
 		return img_resized;

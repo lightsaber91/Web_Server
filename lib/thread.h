@@ -8,4 +8,4 @@ struct thread_job {
 	int LogFile;
 }thread_job;
 
-void *my_thread(void *p);
+void *manage_connection(void *p);

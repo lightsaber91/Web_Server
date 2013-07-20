@@ -1,6 +1,22 @@
 #include "../lib/thread.h"
 
-void *my_thread(void *p){
+void create_thread(struct server_setting *setting, int socket, bool toLog, int LogFile) {
+
+	struct thread_job *job = malloc(sizeof(struct thread_job));
+	if(job == NULL) {
+		perror("Memory Allocation Failure\n");
+		exit(EXIT_FAILURE);
+	}
+	job->s = setting;
+	job->socket = socket;
+	job->toLog = toLog;
+	job->LogFile = LogFile;
+
+	pthread_create(&job->tid, NULL, manage_connection, job);
+
+}
+
+void *manage_connection(void *p){
 
 	bool firstReq = true;
 
@@ -12,6 +28,12 @@ void *my_thread(void *p){
 	config_socket(job->socket, job->s->KeepAlive);
 
 	char *in_request = (char *)malloc(REQ_SIZE*sizeof(char));
+	if(in_request == NULL) {
+		perror("Memory Allocation Failure\n");
+		close(job->socket);
+		free(request);
+		pthread_exit(NULL);
+	}
 
 	while(read_request(job->socket, in_request, firstReq) == 1) {
 

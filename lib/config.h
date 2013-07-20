@@ -1,7 +1,7 @@
 extern char *wurfl_location;
 extern bool use_wurfl;
 
-#define conf_file "./server.conf"
+#define conf_file "/home/lightsaber/.devel/Web_Server/server.conf"
 
 typedef struct server_setting {
 	char *ip;

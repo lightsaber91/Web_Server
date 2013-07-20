@@ -24,37 +24,9 @@ int main() {
 			perror("in accepting request");
 			return(EXIT_FAILURE);
 		}
-		struct thread_job *job = malloc(sizeof(struct thread_job));
-		job->s = setting;
-		job->socket = skt_accpt;
-		job->toLog = toLog;
-		job->LogFile = LogFile;
 
-		pthread_create(&job->tid, NULL, my_thread, job);
-/*
-		timeout.tv_sec = setting->timeout;
-	        timeout.tv_usec = 0;
-		char *in_request = (char *)malloc(REQ_SIZE*sizeof(char));
-		config_socket(skt_accpt, setting->KeepAlive);
-
-		while(read_request(skt_accpt, in_request) == 1) {
-
-			struct browser_request *request;
-			request = parse_browser_request(in_request);
-
-			concatenation(request, setting);
-
-			if(setting->log_lvl > 0) {
-				writeConnectionLog(LogFile, request);
-			}
-			respond(skt_accpt, request, toLog, LogFile);
-
-			free(request);
-			in_request = (char *)realloc(in_request, REQ_SIZE*sizeof(char));
-		}
-		free(in_request);
-		close(skt_accpt);
-*/	}
+		create_thread(setting, skt_accpt, toLog, LogFile);
+	}
 	if(close(skt_lst) == -1) {
 		perror("in closing connection");
 	}
@@ -128,7 +100,9 @@ void concatenation (struct browser_request *request, struct server_setting *sett
 		if(rootFile == NULL) {
 			perror("in malloc");
 		}
-		sprintf(rootFile, "%s%s", setting->root_folder, setting->home_page);
+		if(sprintf(rootFile, "%s%s", setting->root_folder, setting->home_page) < 0) {
+			perror("In sprintf: nothing written\n");
+		}
 		request->file_requested = rootFile;
 	}
 	else {
@@ -136,7 +110,9 @@ void concatenation (struct browser_request *request, struct server_setting *sett
 		if(rootFile == NULL) {
 			perror("in malloc");
 		}
-		sprintf(rootFile, "%s%s", setting->root_folder, request->file_requested);
+		if(sprintf(rootFile, "%s%s", setting->root_folder, request->file_requested) < 0) {
+			perror("In sprintf: nothing written\n");
+		}
 		request->file_requested = rootFile;
 	}
 
