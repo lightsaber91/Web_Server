@@ -11,7 +11,7 @@ char *resize(char *file)
 
 	char *ap = strrchr(file, '.');
 	char *ext = malloc(strlen(ap) +1);
-	if(ext = NULL) {
+	if(ext == NULL) {
 		perror("Memory Allocation Failure\n");
 		return file;
 	}

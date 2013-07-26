@@ -9,6 +9,6 @@
 #include <time.h>
 #include <sys/file.h>
 
-int openLogFile(char *path);
+FILE *openLogFile(char *path);
 
-void writeConnectionLog(int log, struct browser_request *request);
+void writeConnectionLog(FILE *log, struct browser_request *request);

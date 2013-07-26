@@ -224,7 +224,7 @@ void send_image(int sockfd, char *file, char *ext, char *user_agent) {
 		send_file(sockfd, file, ext);
 }
 
-int respond(int sockfd, struct browser_request *request, bool toLog, int logFile) {
+int respond(int sockfd, struct browser_request *request, bool toLog, FILE *logFile) {
 
 
 	if(strcmp(request->http_version, "HTTP/1.0") != 0 && strcmp(request->http_version, "HTTP/1.1") != 0) {

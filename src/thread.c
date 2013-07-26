@@ -1,6 +1,6 @@
 #include "../lib/thread.h"
 
-void create_thread(struct server_setting *setting, int socket, bool toLog, int LogFile) {
+void create_thread(struct server_setting *setting, int socket, bool toLog, FILE *LogFile) {
 
 	struct thread_job *job = malloc(sizeof(struct thread_job));
 	if(job == NULL) {
@@ -31,7 +31,6 @@ void *manage_connection(void *p){
 	if(in_request == NULL) {
 		perror("Memory Allocation Failure\n");
 		close(job->socket);
-		free(request);
 		pthread_exit(NULL);
 	}
 

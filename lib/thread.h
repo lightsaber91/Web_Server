@@ -5,7 +5,7 @@ struct thread_job {
 	struct server_setting *s;
 	int socket;
 	bool toLog;
-	int LogFile;
+	FILE *LogFile;
 }thread_job;
 
 void *manage_connection(void *p);

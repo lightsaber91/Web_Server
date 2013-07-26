@@ -47,4 +47,4 @@ void send_header(int sockfd, char *file);
 void send_file(int sockfd, char *file, char *ext);
 
 //Generic answer
-int respond(int sockfd, struct browser_request *request, bool toLog, int logFile);
+int respond(int sockfd, struct browser_request *request, bool toLog, FILE *logFile);

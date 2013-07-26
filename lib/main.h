@@ -35,7 +35,7 @@ struct timeval timeout;
 int enable_keep_alive = 1;
 
 //Log File Stuff
-int LogFile;
+FILE *LogFile;
 //int nthread = 0;
 
 void create_and_bind();

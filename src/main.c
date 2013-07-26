@@ -8,7 +8,9 @@ int main() {
 
 	if( setting->log_lvl > -1 ) {
 		LogFile = openLogFile(setting->log_path);
-		toLog = true;
+		if(LogFile != NULL) 
+			toLog = true;
+		
 	}
 	create_and_bind();
 
