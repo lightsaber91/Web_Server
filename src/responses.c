@@ -147,7 +147,7 @@ void error_415(int sockfd) {
 		perror("in send");
 		return;
 	}
-	close(sockfd);
+	//close(sockfd);
 }
 
 void send_header(int sockfd, char *file) {
@@ -216,9 +216,15 @@ void send_file(int sockfd, char *file, char *ext) {
 
 void send_image(int sockfd, char *file, char *ext, char *user_agent) {
 
-	if(parse_UA(user_agent) == 0) {
-		char *resized = (char *)resize(file);
-		send_file(sockfd, resized, ext);
+	struct device_property *property = malloc(sizeof(struct device_property));
+	if(property != NULL) { 
+		if(parse_UA(user_agent, property) == 0) {
+
+			char *file_resized = cache_image(property->resolution_width, property->resolution_height, file);
+			send_file(sockfd, file_resized, ext);
+		}
+		else
+			send_file(sockfd, file, ext);
 	}
 	else
 		send_file(sockfd, file, ext);
@@ -259,7 +265,7 @@ int respond(int sockfd, struct browser_request *request, bool toLog, FILE *logFi
 			if(toLog) {
 				writeErrorLog("415 Unsupported Media Type", request, logFile);
 			}
-			return -1;
+			return 0;
 		}
 
 		else if(access(request->file_requested, R_OK) == -1) {
@@ -288,7 +294,7 @@ int respond(int sockfd, struct browser_request *request, bool toLog, FILE *logFi
 }
 
 char *supported_type(char *file) {
-	char *extension = malloc(1);
+	char *extension = NULL;
 	char *ap = strrchr(file, '.');
 	if(ap == NULL) {
 		return "";
@@ -300,7 +306,11 @@ char *supported_type(char *file) {
 		return "";
 	for(i = 0; extensions[i].ext != NULL; i++) {
 		if (strcmp(type, extensions[i].ext) == 0) {
-			extension = realloc(extension, sizeof(extensions[i].mediatype)); 
+			extension = malloc(strlen(extensions[i].mediatype));
+			if(extension == NULL) {
+				perror("Memory Allocation Failure\n");
+				return NULL;
+			} 
 			extension = extensions[i].mediatype;
 			return extension;
 		}

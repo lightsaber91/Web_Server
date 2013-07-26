@@ -1,32 +1,28 @@
 #include "../lib/parser.h"
 
-int findDeviceNodeByUserAgent(xmlNode *node, char *header_useragent)
-{
-    xmlNode *cur = node;
-    //start checking every device
-    cur = cur->xmlChildrenNode;
-    xmlChar *user_agent;
+int findDeviceNodeByUserAgent(xmlNode *node, char *header_useragent, struct device_property *property) {
+	xmlNode *cur = node;
+	//start checking every device
+	cur = cur->xmlChildrenNode;
+	xmlChar *user_agent;
 	while (cur != NULL) {
-        //check if this is a device element
+	        //check if this is a device element
 		if (strcmp((char *)cur->name, "device") == 0) {
-            
-            //extract user-agent of the selected device element
-            user_agent = xmlGetProp(cur, (const xmlChar *)"user_agent");
-            
-            //compare the given user-agent with the one of the selected device element
-            if (strstr((char *)user_agent, header_useragent) != NULL) {
-                //ok, device found, returning...
-		property.device = cur;
-                xmlFree(user_agent);
-		return 0;
-                //return cur;
-            }
-            xmlFree(user_agent);
-        }
+        		//extract user-agent of the selected device element
+        		user_agent = xmlGetProp(cur, (const xmlChar *)"user_agent");
+            	
+        		//compare the given user-agent with the one of the selected device element
+        		if (strstr((char *)user_agent, header_useragent) != NULL) {
+        			//ok, device found, returning...
+				property->device = cur;
+                		xmlFree(user_agent);
+				return 0;
+            		}
+            		xmlFree(user_agent);
+        	}
 		cur = cur->next;
 	}
 	return -1;
-    //return NULL;
 }
 
 void reduce_user_agent(char *user_agent) {
@@ -47,15 +43,32 @@ void reduce_user_agent(char *user_agent) {
 
 char *getDeviceId(xmlNode *device)
 {
-    return (char *)xmlGetProp((device), (const xmlChar *)"id");
+	return (char *)xmlGetProp((device), (const xmlChar *)"id");
 }
 
 char *getDeviceFallBackId(xmlNode *device)
 {
-    return (char *)xmlGetProp((device), (const xmlChar *)"fall_back");
+	return (char *)xmlGetProp((device), (const xmlChar *)"fall_back");
 }
 
-int parse_UA(char *user_agent) {
+int getDeviceDimension(xmlNode *device, int *width, int *height) {
+
+	xmlNode *cur = device;
+	cur = cur->children;
+	xmlChar *id;
+	while ((xmlStrcmp(cur->name, (const xmlChar *)"group")) == 0) {
+		printf("entrato\n");
+		id = xmlGetProp(cur, (const xmlChar *)"id");
+		printf("\n%s\n", (char *)id);
+		if(strcmp((char *)id, "display") == 0) {
+			//prendo misure;
+		}
+		cur = cur->next;
+	}
+	return -1;
+}
+
+int parse_UA(char *user_agent, struct device_property *property) {
 
 	xmlDoc *doc=NULL;
 	xmlNode *cur=NULL;
@@ -87,11 +100,13 @@ int parse_UA(char *user_agent) {
         }
 	while(user_agent != NULL) {
 		reduce_user_agent(user_agent);
-		if(findDeviceNodeByUserAgent(cur, user_agent) == 0) {
-			property.device_id = getDeviceId(property.device);
-			property.device_fallback_id = getDeviceFallBackId(property.device);
-
-			printf("%s\n\n%s\n", property.device_id, property.device_fallback_id);
+		if(findDeviceNodeByUserAgent(cur, user_agent, property) == 0) {
+			property->device_id = getDeviceId(property->device);
+			property->device_fallback_id = getDeviceFallBackId(property->device);
+			if(getDeviceDimension(cur, &property->resolution_width, &property->resolution_height) != 0) {
+				property->resolution_width = 720;
+				property->resolution_height = 1280;
+			}
 			return 0;
 		}
 		

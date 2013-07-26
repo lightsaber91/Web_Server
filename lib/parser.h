@@ -12,4 +12,4 @@ struct device_property {
 	char *device_fallback_id;
 	int resolution_width;
 	int resolution_height;
-} property;
+};

@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include "../src/parser.c"
 #include "../src/resize.c"
+#include "../src/caching.c"
 
 //Struct used for type file
 typedef struct extn{
