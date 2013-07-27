@@ -214,23 +214,29 @@ void send_file(int sockfd, char *file, char *ext) {
 	}
 }
 
-void send_image(int sockfd, char *file, char *ext, char *user_agent) {
+void send_image(int sockfd, char *file, char *ext, char *user_agent, int quality) {
 
 	if(use_wurfl == true) {
 		struct device_property *property = malloc(sizeof(struct device_property));
 		if(property != NULL) { 
 			if(parse_UA(user_agent, property, wurfl_location) == 0) {
-				char *file_resized = cache_image(property->resolution_width, property->resolution_height, file);
+				char *file_resized = cache_by_resolution(property->resolution_width, property->resolution_height, file);
 				send_file(sockfd, file_resized, ext);
 			}
-			else
-				send_file(sockfd, file, ext);
+			else {
+				char *lowq_file = cache_by_quality(file, quality); 
+				send_file(sockfd, lowq_file, ext);
+			}
 		}
-		else
-			send_file(sockfd, file, ext);
+		else {
+			char *lowq_file = cache_by_quality(file, quality); 
+			send_file(sockfd, lowq_file, ext);
+		}
 	}
-	else
-		send_file(sockfd, file, ext);
+	else {
+		char *lowq_file = cache_by_quality(file, quality); 
+		send_file(sockfd, lowq_file, ext);
+	}
 }
 
 int respond(int sockfd, struct browser_request *request, bool toLog, FILE *logFile) {
@@ -285,8 +291,8 @@ int respond(int sockfd, struct browser_request *request, bool toLog, FILE *logFi
 		}
 
 		else {
-			if(strncmp(extension, "image", 5) == 0 && use_wurfl == true) {
-				send_image(sockfd, request->file_requested, extension, request->user_agent);
+			if(strncmp(extension, "image", 5) == 0) {
+				send_image(sockfd, request->file_requested, extension, request->user_agent, request->accept_quality);
 			}
 			else 
 				send_file(sockfd, request->file_requested, extension);

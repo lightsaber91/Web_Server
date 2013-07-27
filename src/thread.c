@@ -41,7 +41,7 @@ void *manage_connection(void *p){
 
 		struct browser_request *request;
 		request = parse_browser_request(in_request);
-
+		printf("%d\n", request->accept_quality);
 		concatenation(request, job->s);
 
 		if(job->s->log_lvl > 0) {

@@ -5,7 +5,8 @@
 #include <sys/types.h>
 #include "../src/parser.c"
 #include "../src/resize.c"
-#include "../src/caching.c"
+#include "../src/wurfl_caching.c"
+#include "../src/quality_caching.c"
 
 extern char *wurfl_location;
 extern bool use_wurfl;
@@ -49,6 +50,7 @@ void error_505(int sockfd);
 //Send header or file
 void send_header(int sockfd, char *file);
 void send_file(int sockfd, char *file, char *ext);
+void send_image(int sockfd, char *file, char *ext, char *user_agent, int quality);
 
 //Generic answer
 int respond(int sockfd, struct browser_request *request, bool toLog, FILE *logFile);

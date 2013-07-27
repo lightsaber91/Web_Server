@@ -9,8 +9,10 @@ struct browser_request{
 	char *connection_type;
 	char *http_version;
 	char *host;
-	char *accept_type;
+	int accept_quality;
 };
+
+int get_quality_factor(char *accept_type);
 
 void parse_request(char *line, struct browser_request *request);
 

@@ -1,5 +1,23 @@
 #include "../lib/parse_request.h"
 
+int get_quality_factor(char *accept_type) {
+
+	char *search = strstr(accept_type, "image");
+	if(search != NULL) {
+		double quality;
+		strtok(search, "=");
+		quality = atof(strtok(NULL,","))*100;
+		return (int)quality;
+	}
+	else {
+		search = strstr(accept_type, "*/*");
+		double quality;
+		strtok(search, "=");
+		quality = atof(strtok(NULL,"\n"))*100;
+		return (int)quality;
+	}	
+} 
+
 void parse_request(char *line, struct browser_request *request) {
 
         if(strncmp(line, "User-Agent: ", 12) == 0) {
@@ -16,7 +34,7 @@ void parse_request(char *line, struct browser_request *request) {
         }
         else if(strncmp(line, "Accept: ", 8) == 0) {
                 strtok(line, " ");
-                request->accept_type = strtok(NULL, "\n\r");
+                request->accept_quality = get_quality_factor(strtok(NULL, "\n\r"));
         }
 }
 
