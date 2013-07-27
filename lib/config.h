@@ -3,7 +3,7 @@ extern bool use_wurfl;
 
 #define conf_file "/home/lightsaber/.devel/Web_Server/server.conf"
 
-typedef struct server_setting {
+struct server_setting {
 	char *ip;
 	char *root_folder;
 	char *home_page;
@@ -18,7 +18,7 @@ typedef struct server_setting {
 	int MaxTread;
 	int MinProcess;
 	int MaxProcess;
-} server_setting;
+};
 
 void write_parameter(char *line, struct server_setting *s);
 

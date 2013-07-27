@@ -216,12 +216,15 @@ void send_file(int sockfd, char *file, char *ext) {
 
 void send_image(int sockfd, char *file, char *ext, char *user_agent) {
 
-	struct device_property *property = malloc(sizeof(struct device_property));
-	if(property != NULL) { 
-		if(parse_UA(user_agent, property) == 0) {
-
-			char *file_resized = cache_image(property->resolution_width, property->resolution_height, file);
-			send_file(sockfd, file_resized, ext);
+	if(use_wurfl == true) {
+		struct device_property *property = malloc(sizeof(struct device_property));
+		if(property != NULL) { 
+			if(parse_UA(user_agent, property, wurfl_location) == 0) {
+				char *file_resized = cache_image(property->resolution_width, property->resolution_height, file);
+				send_file(sockfd, file_resized, ext);
+			}
+			else
+				send_file(sockfd, file, ext);
 		}
 		else
 			send_file(sockfd, file, ext);

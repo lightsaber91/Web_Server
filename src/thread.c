@@ -11,6 +11,7 @@ void create_thread(struct server_setting *setting, int socket, bool toLog, FILE 
 	job->socket = socket;
 	job->toLog = toLog;
 	job->LogFile = LogFile;
+	job->maxKeepAliveReq = setting->MaxKeepAliveReq;
 
 	pthread_create(&job->tid, NULL, manage_connection, job);
 
@@ -34,11 +35,13 @@ void *manage_connection(void *p){
 		pthread_exit(NULL);
 	}
 
-	while(read_request(job->socket, in_request, firstReq) == 1) {
+	while(read_request(job->socket, in_request, firstReq) == 1 && job->maxKeepAliveReq > 0) {
+
+		job->maxKeepAliveReq--;
 
 		struct browser_request *request;
 		request = parse_browser_request(in_request);
-		printf("%s\n", request->user_agent );
+
 		concatenation(request, job->s);
 
 		if(job->s->log_lvl > 0) {
@@ -53,9 +56,11 @@ void *manage_connection(void *p){
 			pthread_exit(NULL);
 		}
 		free(request);
-		if(job->s->KeepAlive == true) {
-			ConfigKeepAliveTimeout(job->socket, job->s->KeepAliveTimeout);
+		if(job->s->KeepAlive == false || strcasecmp(request->connection_type, "keep-alive") == 0 ) {
+			break;
 		}
+
+		ConfigKeepAliveTimeout(job->socket, job->s->KeepAliveTimeout);
 
 		in_request = (char *)realloc(in_request, REQ_SIZE*sizeof(char));
 		//Reinizializzo la memoria a zero
@@ -66,6 +71,5 @@ void *manage_connection(void *p){
 	}
 	free(in_request);
 	close(job->socket);
-	//nthread--;
 	pthread_exit(NULL);
 }

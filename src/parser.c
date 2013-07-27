@@ -68,52 +68,50 @@ int getDeviceDimension(xmlNode *device, int *width, int *height) {
 	return -1;
 }
 
-int parse_UA(char *user_agent, struct device_property *property) {
+int parse_UA(char *user_agent, struct device_property *property, char *wurfl_location) {
 
 	xmlDoc *doc=NULL;
 	xmlNode *cur=NULL;
-
-	char *wurfl_location = "/home/W.xml";
-	if (access("/home/W.xml", R_OK) == 0) {
+	if (access(wurfl_location, R_OK) == 0) {
         	//build the tree from the xml file
-        	doc = xmlReadFile("/home/W.xml", NULL, 0);
+        	doc = xmlReadFile(wurfl_location, NULL, 0);
         	if (doc == NULL ) {
            		fprintf(stderr,"Document not parsed successfully\n");
            		return -1;
         	}
-	cur = xmlDocGetRootElement(doc);
-        if (cur == NULL) {
-            fprintf(stderr,"Empty document\n");
-            xmlFreeDoc(doc);
-            return -1;
-        }
-	if (strcmp((char *)cur->name, "wurfl") != 0) {
-            fprintf(stderr,"Document of the wrong type, root node != wurfl\n");
-            xmlFreeDoc(doc);
-            return -1;
-        }
-	cur = cur->xmlChildrenNode;
-        while (cur != NULL) {
-            if (strcmp((char *)cur->name, "devices") == 0)
-                break;
-            cur = cur->next;
-        }
-	while(user_agent != NULL) {
-		reduce_user_agent(user_agent);
-		if(findDeviceNodeByUserAgent(cur, user_agent, property) == 0) {
-			property->device_id = getDeviceId(property->device);
-			property->device_fallback_id = getDeviceFallBackId(property->device);
-			if(getDeviceDimension(cur, &property->resolution_width, &property->resolution_height) != 0) {
-				property->resolution_width = 720;
-				property->resolution_height = 1280;
-			}
-			return 0;
+		cur = xmlDocGetRootElement(doc);
+        	if (cur == NULL) {
+            		fprintf(stderr,"Empty document\n");
+            		xmlFreeDoc(doc);
+            		return -1;
+        	}
+		if (strcmp((char *)cur->name, "wurfl") != 0) {
+        	    fprintf(stderr,"Document of the wrong type, root node != wurfl\n");
+        	    xmlFreeDoc(doc);
+        	    return -1;
+        	}
+		cur = cur->xmlChildrenNode;
+        	while (cur != NULL) {
+			if (strcmp((char *)cur->name, "devices") == 0)
+				break;
+			cur = cur->next;
 		}
-		
-	}
-	return -1;
-    } else {
-        fprintf(stderr, "Wurfl XML repository not found at path %s. Image processing will be disabled.\n", wurfl_location);
-	return -1;
+		while(user_agent != NULL) {
+			reduce_user_agent(user_agent);
+			if(findDeviceNodeByUserAgent(cur, user_agent, property) == 0) {
+				property->device_id = getDeviceId(property->device);
+				property->device_fallback_id = getDeviceFallBackId(property->device);
+				if(getDeviceDimension(cur, &property->resolution_width, &property->resolution_height) != 0) {
+					property->resolution_width = 720;
+					property->resolution_height = 1280;
+				}
+				return 0;
+			}
+		}
+		return -1;
+	} 
+	else {
+	        perror("Wurfl XML repository not found at path specified by user. Image processing will be disabled.\n");
+		return -1;
 	}
 }

@@ -7,14 +7,17 @@
 #include "../src/resize.c"
 #include "../src/caching.c"
 
+extern char *wurfl_location;
+extern bool use_wurfl;
+
 //Struct used for type file
-typedef struct extn{
+struct extn{
 	char *ext;
 	char *mediatype;
-} extn;
+};
 
 //Possible media types
-extn extensions[] ={
+struct extn extensions[] ={
  {"gif", "image/gif" },
  {"txt", "text/plain" },
  {"jpg", "image/jpg" },
