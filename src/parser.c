@@ -51,21 +51,39 @@ char *getDeviceFallBackId(xmlNode *device)
 	return (char *)xmlGetProp((device), (const xmlChar *)"fall_back");
 }
 
-int getDeviceDimension(xmlNode *device, int *width, int *height) {
-
-	xmlNode *cur = device;
-	cur = cur->children;
-	xmlChar *id;
-	while ((xmlStrcmp(cur->name, (const xmlChar *)"group")) == 0) {
-		printf("entrato\n");
-		id = xmlGetProp(cur, (const xmlChar *)"id");
-		printf("\n%s\n", (char *)id);
-		if(strcmp((char *)id, "display") == 0) {
-			//prendo misure;
+void getDeviceDimension(xmlNode *node, int *width, int *height) {
+	xmlNode *cur = node;
+	cur = cur->xmlChildrenNode;
+	xmlChar *id, *name;
+	while(cur != NULL) {
+		if(strcmp((char *) cur->name, "group") == 0) {
+			id = xmlGetProp(cur, (const xmlChar *)"id");
+			if(strcmp((char *)id, "display") == 0) {
+				cur = cur->xmlChildrenNode;
+				while(cur != NULL) {
+					if(strcmp((char *) cur->name, "capability") == 0) {
+						if(*width != 0 && *height != 0) {
+							break;
+						}
+						name = xmlGetProp(cur, (const xmlChar *)"name");
+						if(strcmp((char *)name, "resolution_width") == 0) {
+							*width = atoi((char *) xmlGetProp(cur, (const xmlChar *)"value"));
+						}
+						if(strcmp((char *)name, "resolution_height") == 0) {
+							*height = atoi((char *) xmlGetProp(cur, (const xmlChar *)"value"));
+						}
+						xmlFree(name);
+					}
+					cur = cur->next;
+				}
+				xmlFree(id);
+				return;
+			}
+			xmlFree(id);
 		}
 		cur = cur->next;
 	}
-	return -1;
+	return;
 }
 
 int parse_UA(char *user_agent, struct device_property *property, char *wurfl_location) {
@@ -76,17 +94,17 @@ int parse_UA(char *user_agent, struct device_property *property, char *wurfl_loc
         	//build the tree from the xml file
         	doc = xmlReadFile(wurfl_location, NULL, 0);
         	if (doc == NULL ) {
-           		fprintf(stderr,"Document not parsed successfully\n");
+           		perror("Document not parsed successfully\n");
            		return -1;
         	}
 		cur = xmlDocGetRootElement(doc);
         	if (cur == NULL) {
-            		fprintf(stderr,"Empty document\n");
+            		perror("Empty document\n");
             		xmlFreeDoc(doc);
             		return -1;
         	}
 		if (strcmp((char *)cur->name, "wurfl") != 0) {
-        	    fprintf(stderr,"Document of the wrong type, root node != wurfl\n");
+        	    perror("Document of the wrong type, root node != wurfl\n");
         	    xmlFreeDoc(doc);
         	    return -1;
         	}
@@ -101,9 +119,12 @@ int parse_UA(char *user_agent, struct device_property *property, char *wurfl_loc
 			if(findDeviceNodeByUserAgent(cur, user_agent, property) == 0) {
 				property->device_id = getDeviceId(property->device);
 				property->device_fallback_id = getDeviceFallBackId(property->device);
-				if(getDeviceDimension(cur, &property->resolution_width, &property->resolution_height) != 0) {
-					property->resolution_width = 720;
-					property->resolution_height = 1280;
+				property->resolution_width = 0;
+				property->resolution_height = 0;
+				getDeviceDimension(property->device, &property->resolution_width, &property->resolution_height);
+				if(property->resolution_width == 0 && property->resolution_height == 0) {
+					perror("Resolution not found in wurfl: resizing disabled.\n");
+					return -1;
 				}
 				return 0;
 			}
