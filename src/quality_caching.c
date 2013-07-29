@@ -53,7 +53,7 @@ char *verify_existence_q(char *file, int quality) {
 		perror("Memory Allocation Failure\n");
 		return NULL;
 	}
-	filename = file+strlen(setting->root_folder);
+	filename = strrchr(file, '/');
 	char *new_dir = create_new_q_dir(quality);
 	if(new_dir == NULL) {
 		return NULL;

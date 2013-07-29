@@ -66,7 +66,7 @@ char *verify_existence_res(int resolution_width ,int resolution_height, char *fi
 		perror("Memory Allocation Failure\n");
 		return NULL;
 	}
-	filename = file+strlen(setting->root_folder);
+	filename = strrchr(file, '/');
 	char *new_dir = create_new_res_dir(resolution_width, resolution_height);
 	if(new_dir == NULL) {
 		return NULL;
