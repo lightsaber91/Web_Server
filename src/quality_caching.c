@@ -1,57 +1,70 @@
 #include "../lib/quality_caching.h"
 
-char *create_new_q_dir(char *file, int quality) {
+char *create_new_q_dir(int quality) {
 
-	char *ap = strrchr(file, '/');
-
-	char *dir = malloc(strlen(file));
-	if(dir == NULL) {
+	char *cache_dir = malloc(strlen(setting->root_folder)+strlen(CACHE)+1);
+	if(cache_dir == NULL) {
+		perror("Memory Allocation Failure\n");
+		return NULL;
+	}
+	if(sprintf(cache_dir,"%s%s", setting->root_folder, CACHE) < 0) {
+		perror("In sprintf: nothing written\n");
+		return NULL;
+	}
+	char *q_dir = malloc(strlen(cache_dir)+strlen(MAX_DIM_Q)+1);
+	if(q_dir == NULL) {
 		perror("Memory Allocation Failure\n");
 		return NULL;
 	}
 
-	dir = cut_name(file, ap);
-	if(dir == NULL) {
-		return NULL;
-	}
-	char *new_dir = malloc(strlen(dir)+strlen(MAX_DIM_Q)+1);
-	if(new_dir == NULL) {
-		perror("Memory Allocation Failure\n");
-		return NULL;
-	}
-
-	if(sprintf(new_dir,"%s/q_%d/",dir, quality) < 0) {
+	if(sprintf(q_dir,"%sq_%d",cache_dir, quality) < 0) {
 		perror("In sprintf: nothing written\n");
 		return NULL;
 	}
 
-	if(access(new_dir, F_OK) == 0) {
-		return new_dir;
-	}	
-
-	if(mkdir((const char *)new_dir, 0777) != 0) {
-		fprintf(stderr,"Error creating directory\n");
-		return NULL;
+	if(access(cache_dir, F_OK) == 0) {
+		if(access(q_dir, F_OK) == 0) {
+			return q_dir;
+		}	
+		if(mkdir((const char *)q_dir, 0777) != 0) {
+			fprintf(stderr,"Error creating directory\n");
+			return NULL;
+		}
+		return q_dir;
 	}
-	return new_dir;
+	else {
+		if(mkdir((const char *)cache_dir, 0777) != 0) {
+			fprintf(stderr,"Error creating directory\n");
+			return NULL;
+		}
+		if(mkdir((const char *)q_dir, 0777) != 0) {
+			fprintf(stderr,"Error creating directory\n");
+			return NULL;
+		}
+		return q_dir;
+	}
+	return NULL;
 }
 
 char *verify_existence_q(char *file, int quality) {
-	char *file_name = get_file_name(file);
-	if(file_name == NULL) {
+
+	char *filename = malloc(strlen(file)-strlen(setting->root_folder)+1);
+	if(filename == NULL) {
+		perror("Memory Allocation Failure\n");
 		return NULL;
 	}
-	char *new_dir = create_new_q_dir(file, quality);
+	filename = file+strlen(setting->root_folder);
+	char *new_dir = create_new_q_dir(quality);
 	if(new_dir == NULL) {
 		return NULL;
 	}
-	char *new_file = malloc(strlen(new_dir)+strlen(file_name)+1);
+	char *new_file = malloc(strlen(new_dir)+strlen(filename)+1);
 	if(new_file == NULL) {
 		perror("Memory Allocation Failure");
 		return NULL;
 	}
 
-	if(sprintf(new_file,"%s%s",new_dir, file_name) < 0) {
+	if(sprintf(new_file,"%s%s",new_dir, filename) < 0) {
 		perror("In sprintf: nothing written\n");
 		return NULL;
 	}

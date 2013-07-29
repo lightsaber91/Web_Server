@@ -88,6 +88,7 @@ void getDeviceDimension(xmlNode *node, int *width, int *height) {
 
 int parse_UA(char *user_agent, struct device_property *property, char *wurfl_location) {
 
+	int max_attempts = setting->user_agent_max_attempts;
 	xmlDoc *doc=NULL;
 	xmlNode *cur=NULL;
 	if (access(wurfl_location, R_OK) == 0) {
@@ -114,8 +115,7 @@ int parse_UA(char *user_agent, struct device_property *property, char *wurfl_loc
 				break;
 			cur = cur->next;
 		}
-//		while(user_agent != NULL) {
-//			reduce_user_agent(user_agent);
+		while(user_agent != NULL && max_attempts > 0) {
 			if(findDeviceNodeByUserAgent(cur, user_agent, property) == 0) {
 				property->device_id = getDeviceId(property->device);
 				property->device_fallback_id = getDeviceFallBackId(property->device);
@@ -128,7 +128,9 @@ int parse_UA(char *user_agent, struct device_property *property, char *wurfl_loc
 				}
 				return 0;
 			}
-		//}
+			reduce_user_agent(user_agent);
+			max_attempts--;
+		}
 		return -1;
 	} 
 	else {

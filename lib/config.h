@@ -11,13 +11,10 @@ struct server_setting {
 	int port;
 	int log_lvl;
 	int timeout;
-	bool KeepAlive;
 	int MaxKeepAliveReq;
 	int KeepAliveTimeout;
-	int MinThread;
-	int MaxTread;
-	int MinProcess;
-	int MaxProcess;
+	int user_agent_max_attempts;
+	bool KeepAlive;
 };
 
 void write_parameter(char *line, struct server_setting *s);

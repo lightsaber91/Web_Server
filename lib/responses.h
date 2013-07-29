@@ -41,7 +41,6 @@ char *supported_type(char *file);
 
 //Error Type:
 void error_400(int sockfd);
-void error_403(int sockfd, struct browser_request *request);
 void error_404(int sockfd, struct browser_request *request);
 void error_408(int sockfd);
 void error_415(int sockfd);

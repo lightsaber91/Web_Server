@@ -4,5 +4,7 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <errno.h>
 
-#define MAX_DIM_RES "9999x9999"
+#define CACHE "cache/"
+#define MAX_DIM_RES "9999x9999/"

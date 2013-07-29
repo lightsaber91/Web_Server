@@ -6,6 +6,8 @@
 #include <string.h>
 #include <ctype.h>
 
+extern struct server_setting *setting;
+
 struct device_property {
 	xmlNode *device;
 	char *device_id;

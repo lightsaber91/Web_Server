@@ -1,52 +1,47 @@
 #include "../lib/wurfl_caching.h"
 
-char *cut_name(char *file, char *ext) {
-	char *new = malloc(strlen(file)+1);
-	if(new == NULL) {
+char *create_new_res_dir(int resolution_width ,int resolution_height) {
+
+	char *cache_dir = malloc(strlen(setting->root_folder)+strlen(CACHE)+1);
+	if(cache_dir == NULL) {
 		perror("Memory Allocation Failure\n");
 		return NULL;
 	}
-	new = strcpy(new, file);
-	int i = strlen(new) - strlen(ext);
-	*(new+i) = '\0';
-	return new;
-}
-
-char *create_new_res_dir(char *file, int resolution_width ,int resolution_height) {
-
-	char *ap = strrchr(file, '/');
-
-	char *dir = malloc(strlen(file));
-	if(dir == NULL) {
-		perror("Memory Allocation Failure\n");
-		return NULL;
-	}
-
-	dir = cut_name(file, ap);
-	if(dir == NULL) {
-		return NULL;
-	}
-
-	char *new_dir = malloc(strlen(dir)+strlen(MAX_DIM_RES)+3);
-	if(new_dir == NULL) {
-		perror("Memory Allocation Failure\n");
-		return NULL;
-	}
-
-	if(sprintf(new_dir,"%s/%dx%d/",dir, resolution_width, resolution_height) < 0) {
+	if(sprintf(cache_dir,"%s%s", setting->root_folder, CACHE) < 0) {
 		perror("In sprintf: nothing written\n");
 		return NULL;
 	}
-
-	if(access(new_dir, F_OK) == 0) {
-		return new_dir;
-	}	
-
-	if(mkdir((const char *)new_dir, 0777) != 0) {
-		fprintf(stderr,"Error creating directory\n");
+	char *res_dir = malloc(strlen(cache_dir)+strlen(MAX_DIM_RES)+1);
+	if(res_dir == NULL) {
+		perror("Memory Allocation Failure\n");
 		return NULL;
 	}
-	return new_dir;
+	if(sprintf(res_dir,"%scache/%dx%d/", setting->root_folder, resolution_width, resolution_height) < 0) {
+		perror("In sprintf: nothing written\n");
+		return NULL;
+	}
+	if(access(cache_dir, F_OK) == 0){
+		if(access(res_dir, F_OK) == 0) {
+			return res_dir;
+		}	
+		if(mkdir((const char *)res_dir, 0777) != 0) {
+			fprintf(stderr,"Error creating directory\n");
+			return NULL;
+		}
+		return res_dir;
+	}
+	else {
+		if(mkdir((const char *)cache_dir, 0777) != 0) {
+			fprintf(stderr,"Error creating directory\n");
+			return NULL;
+		}
+		if(mkdir((const char *)res_dir, 0777) != 0) {
+			fprintf(stderr,"Error creating directory\n");
+			return NULL;
+		}
+		return res_dir;
+	}
+	return NULL;
 }
 
 char *get_file_name(char *file){
@@ -66,21 +61,23 @@ char *get_file_name(char *file){
 
 char *verify_existence_res(int resolution_width ,int resolution_height, char *file){
 
-	char *file_name = get_file_name(file);
-	if(file_name == NULL) {
+	char *filename = malloc(strlen(file)-strlen(setting->root_folder)+1);
+	if(filename == NULL) {
+		perror("Memory Allocation Failure\n");
 		return NULL;
 	}
-	char *new_dir = create_new_res_dir(file, resolution_width, resolution_height);
+	filename = file+strlen(setting->root_folder);
+	char *new_dir = create_new_res_dir(resolution_width, resolution_height);
 	if(new_dir == NULL) {
 		return NULL;
 	}
-	char *new_file = malloc(strlen(new_dir)+strlen(file_name)+1);
+	char *new_file = malloc(strlen(new_dir)+strlen(filename)+1);
 	if(new_file == NULL) {
 		perror("Memory Allocation Failure");
 		return NULL;
 	}
 
-	if(sprintf(new_file,"%s%s",new_dir, file_name) < 0) {
+	if(sprintf(new_file,"%s%s",new_dir, filename) < 0) {
 		perror("In sprintf: nothing written\n");
 		return NULL;
 	}

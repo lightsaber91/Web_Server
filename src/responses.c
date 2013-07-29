@@ -21,31 +21,6 @@ void error_505(int sockfd) {
 	close(sockfd);
 }
 
-void error_403(int sockfd, struct browser_request *request) {
-
-	char message[1000];
-	char header[1000];
-	if(sprintf(message, "<html><head>\n<title>403 Forbidden</title>\n</head><body>\n<h1>Forbidden</h1>\n<p>You don't have permission to access: %s</p>\n</body></html>\n", request->file_requested) < 0) {
-		perror("In sprintf: nothing written\n");
-		return;
-	} 
-	if(sprintf(header, "HTTP/1.1 403 Forbidden\nServer: Prova\nContenent-Length: %ld\nConnection: close\nContent-Type: text/html\n\n",(long int) strlen(message)) < 0) {
-		perror("In sprintf: nothing written\n");
-		return;
-	}
-
-	if(send(sockfd, header, strlen(header), 0) < 0) {
-		perror("in send");
-		return;
-	}
-
-	if(send(sockfd, message, strlen(message), 0) < 0) {
-		perror("in send");
-		return;
-	}
-	close(sockfd);
-}
-
 void error_400(int sockfd) {
 
 	char message[1000];
@@ -246,14 +221,6 @@ int respond(int sockfd, struct browser_request *request, bool toLog, FILE *logFi
 		error_505(sockfd);
 		if(toLog) {
 			writeErrorLog("505 Http Version Not Supported", request, logFile);
-		}
-		return -1;
-	}
-
-	else if(strncmp(request->file_requested, "../", 3) == 0) {
-		error_403(sockfd, request);
-		if(toLog) {
-			writeErrorLog("403 Forbidden", request, logFile);
 		}
 		return -1;
 	}

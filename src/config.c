@@ -39,8 +39,7 @@ void write_parameter(char *line, struct server_setting *s) {
 	}
 	else if ( strncmp(line, "PORT=", 5) == 0 ) {
 		strtok(line, "=");
-		char *port_t = strtok(NULL, ";");
-		s->port = atoi(port_t);
+		s->port = atoi(strtok(NULL, ";"));
 	}
 	else if ( strncmp(line, "LOG_LEVEL=", 10) == 0 ) {
 
@@ -60,8 +59,7 @@ void write_parameter(char *line, struct server_setting *s) {
 	else if ( strncmp(line, "KEEPALIVE=", 10) == 0 ) {
 
 		strtok(line, "=");
-		char *keepAlive_t = strtok(NULL, ";");
-		if ( strncmp(keepAlive_t, "ON", 2) == 0 ) {
+		if ( strncmp(strtok(NULL, ";"), "ON", 2) == 0 ) {
 			s->KeepAlive = true;
 		}
 		else {
@@ -72,23 +70,26 @@ void write_parameter(char *line, struct server_setting *s) {
 	else if ( strncmp(line, "TIMEOUT=", 8) == 0 ) {
 
 		strtok(line, "=");
-		char *timeout_t = strtok(NULL, ";");
-		s->timeout = atoi(timeout_t);
+		s->timeout = atoi(strtok(NULL, ";"));
 
 	}
 
 	else if ( strncmp(line, "KEEPALIVE_REQ=", 14) == 0 ) {
 
 		strtok(line, "=");
-		char *req_t = strtok(NULL, ";");
-		s->MaxKeepAliveReq = atoi(req_t);
+		s->MaxKeepAliveReq = atoi(strtok(NULL, ";"));
 
 	}
 	else if ( strncmp(line, "KEEPALIVE_TIMEOUT=", 18) == 0 ) {
 
 		strtok(line, "=");
-		char *K_timeout = strtok(NULL, ";");
-		s->KeepAliveTimeout = atoi(K_timeout);
+		s->KeepAliveTimeout = atoi(strtok(NULL, ";"));
+
+	}
+	else if ( strncmp(line, "USER_AGENT_MAX_ATTEMPTS=", 24) == 0) {
+
+		strtok(line, "=");
+		s->user_agent_max_attempts = atoi(strtok(NULL, ";"));
 
 	}
 }
