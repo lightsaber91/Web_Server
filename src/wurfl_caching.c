@@ -4,7 +4,7 @@ char *cut_name(char *file, char *ext) {
 	char *new = malloc(strlen(file)+1);
 	if(new == NULL) {
 		perror("Memory Allocation Failure\n");
-		return file;
+		return NULL;
 	}
 	new = strcpy(new, file);
 	int i = strlen(new) - strlen(ext);
@@ -19,29 +19,33 @@ char *create_new_res_dir(char *file, int resolution_width ,int resolution_height
 	char *dir = malloc(strlen(file));
 	if(dir == NULL) {
 		perror("Memory Allocation Failure\n");
-		return file;
+		return NULL;
 	}
 
 	dir = cut_name(file, ap);
+	if(dir == NULL) {
+		return NULL;
+	}
 
 	char *new_dir = malloc(strlen(dir)+strlen(MAX_DIM_RES)+3);
 	if(new_dir == NULL) {
 		perror("Memory Allocation Failure\n");
-		return file;
+		return NULL;
 	}
 
 	if(sprintf(new_dir,"%s/%dx%d/",dir, resolution_width, resolution_height) < 0) {
 		perror("In sprintf: nothing written\n");
-		return file;
+		return NULL;
 	}
 
 	if(access(new_dir, F_OK) == 0) {
 		return new_dir;
 	}	
 
-	if(mkdir((const char *)new_dir, 0777) != 0)
+	if(mkdir((const char *)new_dir, 0777) != 0) {
 		fprintf(stderr,"Error creating directory\n");
-
+		return NULL;
+	}
 	return new_dir;
 }
 
@@ -51,11 +55,11 @@ char *get_file_name(char *file){
 	char *file_name = malloc(strlen(ap) +1);
 	if(file_name == NULL) {
 		perror("Memory Allocation Failure\n");
-		return file;
+		return NULL;
 	}
 	if(strcpy(file_name, ap) == NULL) {
 		perror("In strcpy");
-		return file;
+		return NULL;
 	}
 	return file_name;
 }
@@ -63,16 +67,22 @@ char *get_file_name(char *file){
 char *verify_existence_res(int resolution_width ,int resolution_height, char *file){
 
 	char *file_name = get_file_name(file);
+	if(file_name == NULL) {
+		return NULL;
+	}
 	char *new_dir = create_new_res_dir(file, resolution_width, resolution_height);
+	if(new_dir == NULL) {
+		return NULL;
+	}
 	char *new_file = malloc(strlen(new_dir)+strlen(file_name)+1);
 	if(new_file == NULL) {
 		perror("Memory Allocation Failure");
-		return file;
+		return NULL;
 	}
 
 	if(sprintf(new_file,"%s%s",new_dir, file_name) < 0) {
 		perror("In sprintf: nothing written\n");
-		return file;
+		return NULL;
 	}
 	if(access(new_file, F_OK) == 0) {
 		return new_file;
@@ -84,5 +94,8 @@ char *verify_existence_res(int resolution_width ,int resolution_height, char *fi
 
 char *cache_by_resolution(int resolution_width ,int resolution_height ,char *file) {
 	char *new_file = verify_existence_res(resolution_width, resolution_height, file);
+	if(new_file == NULL) {
+		return file;
+	}
 	return new_file;	
 }
