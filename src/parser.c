@@ -114,8 +114,8 @@ int parse_UA(char *user_agent, struct device_property *property, char *wurfl_loc
 				break;
 			cur = cur->next;
 		}
-		while(user_agent != NULL) {
-			reduce_user_agent(user_agent);
+//		while(user_agent != NULL) {
+//			reduce_user_agent(user_agent);
 			if(findDeviceNodeByUserAgent(cur, user_agent, property) == 0) {
 				property->device_id = getDeviceId(property->device);
 				property->device_fallback_id = getDeviceFallBackId(property->device);
@@ -128,7 +128,7 @@ int parse_UA(char *user_agent, struct device_property *property, char *wurfl_loc
 				}
 				return 0;
 			}
-		}
+		//}
 		return -1;
 	} 
 	else {
