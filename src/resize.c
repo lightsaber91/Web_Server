@@ -28,9 +28,15 @@ char *resize_by_resolution(char *new_file, char *file, int resolution_width, int
 	MagickWandGenesis();
 
 	m_wand = NewMagickWand();
+	if(m_wand == (MagickWand *) NULL){
+		perror("Error inizializing new MagickWand\n");
+		return file;	
+	}
 	// Read the image - all you need to do is change "logo:" to some other
 	// filename to have this resize and, if necessary, convert a different file
-	MagickReadImage(m_wand, file);
+	if(MagickReadImage(m_wand, file) == MagickFalse) {
+		return file;
+	}
 
 	//Get initial size of image
 	initial_width = MagickGetImageWidth(m_wand);
@@ -40,16 +46,24 @@ char *resize_by_resolution(char *new_file, char *file, int resolution_width, int
 	// I haven't figured out how you would change the blur parameter of MagickResizeImage
 	// on the command line so I have set it to its default of one.
 	if(maintainRatio(initial_width, resolution_width, &fixed_width, initial_height, resolution_height, &fixed_height) == 0) {
-		MagickResizeImage(m_wand, fixed_width, fixed_height, LanczosFilter,1);
+		if(MagickResizeImage(m_wand, fixed_width, fixed_height, LanczosFilter,1) == MagickFalse) {
+			return file;
+		}
 	}
 	else {
-		MagickResizeImage(m_wand, resolution_width, resolution_height, LanczosFilter,1);
+		if(MagickResizeImage(m_wand, resolution_width, resolution_height, LanczosFilter,1) == MagickFalse) {
+			return file;
+		}
 	}
 	// Set the compression quality to 95 (high quality = low compression)
-	MagickSetImageCompressionQuality(m_wand, 95);
+	if(MagickSetImageCompressionQuality(m_wand, 95) == MagickFalse) {
+		return file;
+	}
 
 	// Write the new image 
-	MagickWriteImage(m_wand, new_file);
+	if(MagickWriteImage(m_wand, new_file) == MagickFalse) {
+		return file;
+	}
 
 	// Clean up 
 	if(m_wand)m_wand = DestroyMagickWand(m_wand);
@@ -64,14 +78,24 @@ char *resize_by_quality(char *new_file, char *file, int quality) {
 	MagickWandGenesis();
 
 	m_wand = NewMagickWand();
+	if(m_wand == (MagickWand *) NULL){
+		perror("Error inizializing new MagickWand\n");
+		return file;	
+	}
 	// Read the image - all you need to do is change "logo:" to some other
 	// filename to have this resize and, if necessary, convert a different file
-	MagickReadImage(m_wand, file);
-	// Set the compression quality to 95 (high quality = low compression)
-	MagickSetImageCompressionQuality(m_wand, quality);
+	if(MagickReadImage(m_wand, file) == MagickFalse) {
+		return file;
+	}
+	// Set the compression quality (high quality = low compression)
+	if(MagickSetImageCompressionQuality(m_wand, quality) == MagickFalse) {
+		return file;
+	}
 
 	// Write the new image 
-	MagickWriteImage(m_wand, new_file);
+	if(MagickWriteImage(m_wand, new_file) == MagickFalse) {
+		return file;
+	}
 
 	// Clean up 
 	if(m_wand)m_wand = DestroyMagickWand(m_wand);

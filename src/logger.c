@@ -3,7 +3,7 @@
 FILE *openLogFile(char *path) {
 	FILE *log = fopen(path, "a+");
 	if(log == NULL) {
-		perror("opening log file");
+		perror("Opening Log File\n");
 	}
 	return log;
 }
@@ -21,7 +21,7 @@ void writeConnectionLog(FILE *log, struct browser_request *request) {
 	if(now == -1) {
 		perror("in mktime");
 		if(fwrite(no_date, strlen(no_date), 1, log) != 1) {
-			perror("writing log file");
+			perror("Writing on log file\n");
 		}
 		fflush(log);
 	}
@@ -30,7 +30,7 @@ void writeConnectionLog(FILE *log, struct browser_request *request) {
 			perror("In sprintf: nothing written\n");
 		}
 		if(fwrite(date, strlen(date), 1, log) != 1) {
-			perror("writing log file");
+			perror("Writing on log file\n");
 		}
 		fflush(log);
 	}
@@ -40,7 +40,7 @@ void writeConnectionLog(FILE *log, struct browser_request *request) {
 	}
 
 	if(fwrite(info, strlen(info), 1, log) != 1) {
-		perror("writing log file");
+		perror("Writing on log file\n");
 	}
 	fflush(log);
 	bzero(info, 1000);
@@ -62,7 +62,7 @@ void writeErrorLog(char *error, struct browser_request *request, FILE *log) {
 		}
 	}
 	if(fwrite(errLog, strlen(errLog), 1, log) != 1) {
-		perror("writing log file");
+		perror("Writing on log file\n");
 	}
 	fflush(log);
 	funlockfile(log);

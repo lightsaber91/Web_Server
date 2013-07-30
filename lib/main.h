@@ -14,10 +14,12 @@
 #include <stdbool.h>
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
+#include <signal.h>
 #include "../src/config.c"
 #include "../src/parse_request.c"
 #include "../src/logger.c"
 #include "../src/responses.c"
+#include "../src/shutdown.c"
 
 #define BACKLOG 10
 #define REQ_SIZE 1000

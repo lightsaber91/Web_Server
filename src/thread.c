@@ -1,11 +1,30 @@
 #include "../lib/thread.h"
 
+void close_thread(int socket, char *in, struct browser_request *request) {
+
+	if(shutdown(socket, SHUT_RDWR) == -1) {
+		perror("Shutting down the socket\n");
+	}
+	if(in != NULL) {
+		free(in);
+	}
+	if(request != NULL) {
+		free(request);
+	}
+	pthread_exit(NULL);
+}
+
 void create_thread(struct server_setting *setting, int socket, bool toLog, FILE *LogFile) {
 
 	struct thread_job *job = malloc(sizeof(struct thread_job));
 	if(job == NULL) {
 		perror("Memory Allocation Failure\n");
-		exit(EXIT_FAILURE);
+		//Non viene effettuata la exit() poichè altri thread potrebbero già essere in esecuzione
+		//Annulliamo quindi solo la creazione del nuovo
+		if(shutdown(socket, SHUT_RDWR) == -1) {
+			perror("Shutting down the socket\n");
+		}
+		return;
 	}
 	job->s = setting;
 	job->socket = socket;
@@ -14,7 +33,6 @@ void create_thread(struct server_setting *setting, int socket, bool toLog, FILE 
 	job->maxKeepAliveReq = setting->MaxKeepAliveReq;
 
 	pthread_create(&job->tid, NULL, manage_connection, job);
-
 }
 
 void *manage_connection(void *p){
@@ -30,9 +48,7 @@ void *manage_connection(void *p){
 
 	char *in_request = (char *)malloc(REQ_SIZE*sizeof(char));
 	if(in_request == NULL) {
-		perror("Memory Allocation Failure\n");
-		close(job->socket);
-		pthread_exit(NULL);
+		close_thread(job->socket, NULL, NULL);
 	}
 
 	while(read_request(job->socket, in_request, firstReq) == 1 && job->maxKeepAliveReq > 0) {
@@ -41,6 +57,9 @@ void *manage_connection(void *p){
 
 		struct browser_request *request;
 		request = parse_browser_request(in_request);
+		if(request == NULL) {
+			close_thread(job->socket, in_request, NULL);
+		}
 		concatenation(request, job->s);
 
 		if(job->s->log_lvl > 0) {
@@ -48,14 +67,11 @@ void *manage_connection(void *p){
 		}
 
 		if(respond(job->socket, request, job->toLog, job->LogFile) == -1) {
-			close(job->socket);
-			free(request);
-			//nthread--;
-			free(in_request);
-			pthread_exit(NULL);
+			close_thread(job->socket, in_request, request);
 		}
 		free(request);
-		if(job->s->KeepAlive == false || strcasecmp(request->connection_type, "keep-alive") == 0 ) {
+
+		if(job->s->KeepAlive == false) {
 			break;
 		}
 
@@ -64,11 +80,7 @@ void *manage_connection(void *p){
 		in_request = (char *)realloc(in_request, REQ_SIZE*sizeof(char));
 		//Reinizializzo la memoria a zero
 		bzero(in_request, REQ_SIZE*sizeof(char));
-
 		firstReq = false;
-
 	}
-	free(in_request);
-	close(job->socket);
-	pthread_exit(NULL);
+	close_thread(job->socket, in_request, NULL);
 }

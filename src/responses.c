@@ -9,16 +9,15 @@ void error_505(int sockfd) {
 		return;
 	}
 
-	if(send(sockfd, header, strlen(header), 0) < 0) {
-		perror("in send");
+	if(send(sockfd, header, strlen(header), MSG_NOSIGNAL) < 0) {
+		perror("Sending Packet\n");
 		return;
 	}
 
-	if(send(sockfd, message, strlen(message), 0) < 0) {
-		perror("in send");
+	if(send(sockfd, message, strlen(message), MSG_NOSIGNAL) < 0) {
+		perror("Sending Packet\n");
 		return;
 	}
-	close(sockfd);
 }
 
 void error_400(int sockfd) {
@@ -34,12 +33,12 @@ void error_400(int sockfd) {
 		return;
 	}
 
-	if(send(sockfd, header, strlen(header), 0) < 0) {
+	if(send(sockfd, header, strlen(header), MSG_NOSIGNAL) < 0) {
 		perror("in send");
 		return;
 	}
 
-	if(send(sockfd, message, strlen(message), 0) < 0) {
+	if(send(sockfd, message, strlen(message), MSG_NOSIGNAL) < 0) {
 		perror("in send");
 		return;
 	}
@@ -59,17 +58,15 @@ void error_408(int sockfd) {
 		return;
 	}
 
-	if(send(sockfd, header, strlen(header), 0) < 0) {
-		perror("in send");
+	if(send(sockfd, header, strlen(header), MSG_NOSIGNAL) < 0) {
+		perror("Sending Packet\n");
 		return;
 	}
 
-	if(send(sockfd, message, strlen(message), 0) < 0) {
-		perror("in send");
+	if(send(sockfd, message, strlen(message), MSG_NOSIGNAL) < 0) {
+		perror("Sending Packet\n");
 		return;
 	}
-	close(sockfd);
-
 }
 
 void error_404(int sockfd, struct browser_request *request) {
@@ -90,15 +87,14 @@ void error_404(int sockfd, struct browser_request *request) {
 		return;
 	}
 
-	if(send(sockfd, header, strlen(header), 0) < 0) {
-		perror("in send");
+	if(send(sockfd, header, strlen(header), MSG_NOSIGNAL) < 0) {
+		perror("Sending Packet\n");
 		return;
 	}
-	if(send(sockfd, message, strlen(message), 0) < 0 ) {
-		perror("in send");
+	if(send(sockfd, message, strlen(message), MSG_NOSIGNAL) < 0 ) {
+		perror("Sending Packet\n");
 		return;
 	}
-	//close(sockfd);
 }
 
 void error_415(int sockfd) {
@@ -114,62 +110,60 @@ void error_415(int sockfd) {
 		return;
 	}
 
-	if(send(sockfd, header, strlen(header), 0) < 0) {
-		perror("in send");
+	if(send(sockfd, header, strlen(header), MSG_NOSIGNAL) < 0) {
+		perror("Sending Packet\n");
 		return;
 	}
-	if(send(sockfd, message, strlen(message), 0) < 0 ) {
-		perror("in send");
+	if(send(sockfd, message, strlen(message), MSG_NOSIGNAL) < 0 ) {
+		perror("Sending Packet\n");
 		return;
 	}
-	//close(sockfd);
 }
 
 void send_header(int sockfd, char *file) {
 	int fd;
 	fd = open(file, O_RDONLY);
 	if(fd == -1){
-		perror("in open");
-		exit(EXIT_FAILURE);
+		perror("Opening File Requested\n");
+		return;
 	}
 	long lenfile;
 	lenfile = (long)lseek(fd, (off_t)0, SEEK_END);
 	if(lenfile == -1){
-		perror("in lseek");
-		exit(EXIT_FAILURE);
+		perror("In lseek\n");
+		return;
 	}
 	if(lseek(fd, (off_t)0, SEEK_SET) == -1) {
-		perror("in lseek");
-		exit(EXIT_FAILURE);
+		perror("In lseek\n");
+		return;
 	}
 	char header[8096];
 	if(sprintf(header,"HTTP/1.1 200 OK\nServer: web_prova\nContent-Length: %ld\nConnection: close\nContent-Type: text/html\n\n",lenfile) < 0) {
 		perror("In sprintf: nothing written\n");
 		return;
 	}
-	if(send(sockfd, header, strlen(header), 0) == -1) {
-		perror("in send");
+	if(send(sockfd, header, strlen(header), MSG_NOSIGNAL) == -1) {
+		perror("Sending Packet\n");
 		return;
 	}
-	close(sockfd);
 }
 
 void send_file(int sockfd, char *file, char *ext) {
 	int fd;
 	fd = open(file, O_RDONLY);
 	if(fd == -1){
-		perror("in open");
-		exit(EXIT_FAILURE);
+		perror("Opening File Requested\n");
+		return;
 	}
 	long lenfile;
 	lenfile = (long)lseek(fd, (off_t)0, SEEK_END);
 	if(lenfile == -1){
-		perror("in lseek");
-		exit(EXIT_FAILURE);
+		perror("In lseek\n");
+		return;
 	}
 	if(lseek(fd, (off_t)0, SEEK_SET) == -1) {
-		perror("in lseek");
-		exit(EXIT_FAILURE);
+		perror("In lseek\n");
+		return;
 	}
 	int ret = 0;
 	char header[250];
@@ -177,13 +171,13 @@ void send_file(int sockfd, char *file, char *ext) {
 		perror("In sprintf: nothing written\n");
 		return;
 	}
-	if(send(sockfd, header, strlen(header), 0) == -1) {
-		perror("sending file");
+	if(send(sockfd, header, strlen(header), MSG_NOSIGNAL) == -1) {
+		perror("Sending Packet\n");
 		return;
 	}
-	while ((ret = read(fd, header,250)) > 0 ){
-		if(send(sockfd,header,ret, 0) == -1) {
-			perror("in send");
+	while ((ret = read(fd, header, 250)) > 0 ){
+		if(send(sockfd,header,ret, MSG_NOSIGNAL) == -1) {
+			perror("Sending Packet\n");
 			return;
 		}
 	}

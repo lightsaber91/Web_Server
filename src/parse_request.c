@@ -52,8 +52,8 @@ struct browser_request *parse_browser_request(char *message) {
 
 	request = malloc(sizeof(struct browser_request));
 	if(request == NULL) {
-		perror("memory allocation Failure");
-		exit(EXIT_FAILURE);
+		perror("Memory Allocation Failure");
+		return NULL;
 	}
 
 	char *line, *save_pointer;

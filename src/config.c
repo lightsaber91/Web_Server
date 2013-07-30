@@ -99,7 +99,7 @@ struct server_setting *parse_config_file() {
 	struct server_setting *s = malloc(sizeof(struct server_setting));
 
 	if(s == NULL) {
-		perror("allocating memory");
+		perror("Memory Allocation Failure\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -107,7 +107,7 @@ struct server_setting *parse_config_file() {
 
 	FILE *conf = fopen(conf_file, "r");
 	if(conf == NULL) {
-		perror("config file not found");
+		perror("Configuration File NOT FOUND\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -116,7 +116,7 @@ struct server_setting *parse_config_file() {
 		char *line = NULL;
 
 		if(getdelim(&line, &n, '\n', conf) == -1) {
-			perror("in getdelim");
+			perror("In getdelim\n");
 		}
 
 		if( strncmp(line, "EOF" ,3) == 0 ) {
