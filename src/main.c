@@ -19,7 +19,7 @@ int main() {
 	for(;;) {
 
 
-		if(listen(skt_lst, BACKLOG) == -1) {
+		if(listen(skt_lst, PEND_CONNECTION) == -1) {
 			perror("Socket Listening Error\n");
 			return(EXIT_FAILURE);
 		}
@@ -69,22 +69,14 @@ void config_socket(int sockfd, bool KeepAlive) {
 int read_request(int sockfd, char *buf, bool req) {
 
 	int rec = 0, byteread = 0;
-	int r_max = REQ_SIZE;
 	do {
-		rec = recv(sockfd, buf+byteread, r_max-byteread, MSG_NOSIGNAL);
+		rec = recv(sockfd, buf+byteread, REQ_SIZE-byteread, MSG_NOSIGNAL);
 		if(strcmp(buf, "\r\n") != 0) {
 			byteread += rec;
 			if(byteread > 4) {
-				if(buf[byteread-1] == '\n' && buf[byteread-2] == '\r' && buf[byteread-3] == '\n' && buf[byteread-4] == '\r') {
+				if(buf[byteread-3] == '\n' && buf[byteread-4] == '\r') {
 					return 1;
 				}
-			}
-		}
-		if(byteread == r_max) {
-			r_max *= 2; 
-			buf = (char *)realloc(buf, r_max*sizeof(char));
-			if(buf == NULL) {
-				perror("Reallocation Memory Failure\n");
 			}
 		}
 		usleep(1);

@@ -21,7 +21,7 @@
 #include "../src/responses.c"
 #include "../src/shutdown.c"
 
-#define BACKLOG 10
+#define PEND_CONNECTION 100
 #define REQ_SIZE 1000
 
 //Settings Variable

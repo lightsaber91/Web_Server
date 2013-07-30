@@ -41,17 +41,23 @@ void *manage_connection(void *p){
 
 	struct thread_job *job = (struct thread_job *)p;
 
+	pthread_detach(pthread_self());
+	//pthread_setschedprio(pthread_self(), HIGHPRIORITY);
+
         timeout.tv_sec = job->s->timeout;
         timeout.tv_usec = 0;
 
 	config_socket(job->socket, job->s->KeepAlive);
 
-	char *in_request = (char *)malloc(REQ_SIZE*sizeof(char));
-	if(in_request == NULL) {
-		close_thread(job->socket, NULL, NULL);
-	}
+	while(job->maxKeepAliveReq > 0) {
 
-	while(read_request(job->socket, in_request, firstReq) == 1 && job->maxKeepAliveReq > 0) {
+		char *in_request = (char *)malloc(REQ_SIZE*sizeof(char));
+		if(in_request == NULL) {
+			close_thread(job->socket, NULL, NULL);
+		}
+
+		if(read_request(job->socket, in_request, firstReq) != 1)
+			break; 
 
 		job->maxKeepAliveReq--;
 
@@ -70,17 +76,14 @@ void *manage_connection(void *p){
 			close_thread(job->socket, in_request, request);
 		}
 		free(request);
-
+		free(in_request);
 		if(job->s->KeepAlive == false) {
 			break;
 		}
 
 		ConfigKeepAliveTimeout(job->socket, job->s->KeepAliveTimeout);
-
-		in_request = (char *)realloc(in_request, REQ_SIZE*sizeof(char));
-		//Reinizializzo la memoria a zero
-		bzero(in_request, REQ_SIZE*sizeof(char));
 		firstReq = false;
 	}
-	close_thread(job->socket, in_request, NULL);
+	shutdown(job->socket, SHUT_RDWR);
+	pthread_exit(NULL);
 }

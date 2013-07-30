@@ -2,19 +2,12 @@
 
 void error_505(int sockfd) {
 
-	char *message = "<html><head>\n<title>505 Http Version Not Supported</title>\n</head><body>\n<h1>Http Version Not Supported</h1>\n</body></html>\n";
-	char header[strlen(message)+sizeof(long int)];
-	if(sprintf(header, "HTTP/1.1 505 Http Version Not Supported\nServer: Prova\nContenent-Length: %ld\nConnection: close\nContent-Type: text/html\n\n",(long int) strlen(message)) < 0) {
-		perror("In sprintf: nothing written\n");
-		return;
-	}
-
-	if(send(sockfd, header, strlen(header), MSG_NOSIGNAL) < 0) {
+	if(send(sockfd, ERR_505, strlen(ERR_505), MSG_NOSIGNAL) < 0) {
 		perror("Sending Packet\n");
 		return;
 	}
 
-	if(send(sockfd, message, strlen(message), MSG_NOSIGNAL) < 0) {
+	if(send(sockfd, PAG_505, strlen(PAG_505), MSG_NOSIGNAL) < 0) {
 		perror("Sending Packet\n");
 		return;
 	}
@@ -22,24 +15,13 @@ void error_505(int sockfd) {
 
 void error_400(int sockfd) {
 
-	char message[1000];
-	char header[1000];
-	if(sprintf(message, "<html><head>\n<title>400 Bad Request</title>\n</head><body>\n<h1>Bad Request</h1>\n<p>Your browser sent a request that this server could not understand</p>\n</body></html>\n") < 0) {
-		perror("In sprintf: nothing written\n");
-		return;
-	} 
-	if(sprintf(header, "HTTP/1.1 400 Bad Request\nServer: Prova\nContenent-Length: %ld\nConnection: close\nContent-Type: text/html\n\n", (long int) strlen(message)) < 0) {
-		perror("In sprintf: nothing written\n");
+	if(send(sockfd, ERR_400, strlen(ERR_400), MSG_NOSIGNAL) < 0) {
+		perror("Sending Packet\n");
 		return;
 	}
 
-	if(send(sockfd, header, strlen(header), MSG_NOSIGNAL) < 0) {
-		perror("in send");
-		return;
-	}
-
-	if(send(sockfd, message, strlen(message), MSG_NOSIGNAL) < 0) {
-		perror("in send");
+	if(send(sockfd, PAG_400, strlen(PAG_400), MSG_NOSIGNAL) < 0) {
+		perror("Sending Packet\n");
 		return;
 	}
 	close(sockfd);
@@ -47,51 +29,24 @@ void error_400(int sockfd) {
 
 void error_408(int sockfd) {
 
-	char message[1000];
-	char header[1000];
-	if(sprintf(message, "<html><head>\n<title>408 Request Time-out</title>\n</head><body>\n<h1>Request Time-out</h1>\n<p>Server timeout waiting for the HTTP request from the client.</p>\n</body></html>\n") < 0) {
-		perror("In sprintf: nothing written\n");
-		return;
-	} 
-	if(sprintf(header, "HTTP/1.1 408 Request Time-out\nServer: Prova\nContenent-Length: %ld\nConnection: close\nContent-Type: text/html\n\n", (long int) strlen(message)) < 0) {
-		perror("In sprintf: nothing written\n");
-		return;
-	}
-
-	if(send(sockfd, header, strlen(header), MSG_NOSIGNAL) < 0) {
+	if(send(sockfd, ERR_408, strlen(ERR_408), MSG_NOSIGNAL) < 0) {
 		perror("Sending Packet\n");
 		return;
 	}
 
-	if(send(sockfd, message, strlen(message), MSG_NOSIGNAL) < 0) {
+	if(send(sockfd, PAG_408, strlen(PAG_408), MSG_NOSIGNAL) < 0) {
 		perror("Sending Packet\n");
 		return;
 	}
 }
 
-void error_404(int sockfd, struct browser_request *request) {
+void error_404(int sockfd) {
 
-	char message[1000];
-	char header[1000];
-	char *ap = malloc(strlen(request->file_requested));
-	strcpy(ap, request->file_requested);
-	strtok(ap, "//");
-	strtok(NULL, "//");
-	ap = strtok(NULL, "\n");
-	if(sprintf(message, "<html><head>\n<title>404 Not Found</title>\n</head><body>\n<h1>Not Found</h1>\n<p>The requested URL: %s was not found on this server</p>\n</body></html>\n", ap) < 0) {
-		perror("In sprintf: nothing written\n");
-		return;
-	}
-	if(sprintf(header, "HTTP/1.1 404 Not Found\nServer: Prova\nContenent-Length: %ld\nContent-Type: text/html\nConnection: Keep-Alive\n\n", (long int) strlen(message)) < 0) {
-		perror("In sprintf: nothing written\n");
-		return;
-	}
-
-	if(send(sockfd, header, strlen(header), MSG_NOSIGNAL) < 0) {
+	if(send(sockfd, ERR_404, strlen(ERR_404), MSG_NOSIGNAL) < 0) {
 		perror("Sending Packet\n");
 		return;
 	}
-	if(send(sockfd, message, strlen(message), MSG_NOSIGNAL) < 0 ) {
+	if(send(sockfd, PAG_404, strlen(PAG_404), MSG_NOSIGNAL) < 0 ) {
 		perror("Sending Packet\n");
 		return;
 	}
@@ -99,37 +54,24 @@ void error_404(int sockfd, struct browser_request *request) {
 
 void error_415(int sockfd) {
 
-	char message[1000];
-	char header[1000];
-	if(sprintf(message, "<html><head>\n<title>415 Unsupported Media Type</title>\n</head><body>\n<h1>Unsupported Media Type</h1>\n<p>The requested Type is not supported by this server</p>\n</body></html>\n") < 0) {
-		perror("In sprintf: nothing written\n");
-		return;
-	}
-	if(sprintf(header, "HTTP/1.1 415 Unsupported Media Type\nServer: Prova\nContenent-Length: %ld\nContent-Type: text/html\nConnection: close\n\n", (long int) strlen(message)) < 0) {
-		perror("In sprintf: nothing written\n");
-		return;
-	}
-
-	if(send(sockfd, header, strlen(header), MSG_NOSIGNAL) < 0) {
+	if(send(sockfd, ERR_415, strlen(ERR_415), MSG_NOSIGNAL) < 0) {
 		perror("Sending Packet\n");
 		return;
 	}
-	if(send(sockfd, message, strlen(message), MSG_NOSIGNAL) < 0 ) {
+	if(send(sockfd, PAG_415, strlen(PAG_415), MSG_NOSIGNAL) < 0 ) {
 		perror("Sending Packet\n");
 		return;
 	}
 }
 
 void send_header(int sockfd, char *file) {
-	int fd;
-	fd = open(file, O_RDONLY);
+	int fd = open(file, O_RDONLY, S_IREAD | S_IWRITE);
 	if(fd == -1){
 		perror("Opening File Requested\n");
 		return;
 	}
-	long lenfile;
-	lenfile = (long)lseek(fd, (off_t)0, SEEK_END);
-	if(lenfile == -1){
+	unsigned long long lenfile = (unsigned long long)lseek(fd, (off_t)0, SEEK_END);
+	if(lenfile == (unsigned long long)-1){
 		perror("In lseek\n");
 		return;
 	}
@@ -137,8 +79,8 @@ void send_header(int sockfd, char *file) {
 		perror("In lseek\n");
 		return;
 	}
-	char header[8096];
-	if(sprintf(header,"HTTP/1.1 200 OK\nServer: web_prova\nContent-Length: %ld\nConnection: close\nContent-Type: text/html\n\n",lenfile) < 0) {
+	char header[BUF_SIZE];
+	if(sprintf(header,"HTTP/1.1 200 OK\nContent-Length: %lld\nConnection: close\nContent-Type: text/html\n\n",lenfile) < 0) {
 		perror("In sprintf: nothing written\n");
 		return;
 	}
@@ -149,15 +91,14 @@ void send_header(int sockfd, char *file) {
 }
 
 void send_file(int sockfd, char *file, char *ext) {
-	int fd;
-	fd = open(file, O_RDONLY);
+	int fd = open(file, O_RDONLY, S_IREAD | S_IWRITE);
 	if(fd == -1){
 		perror("Opening File Requested\n");
 		return;
 	}
-	long lenfile;
-	lenfile = (long)lseek(fd, (off_t)0, SEEK_END);
-	if(lenfile == -1){
+	unsigned long long lenfile;
+	lenfile = (unsigned long long)lseek(fd, (off_t)0, SEEK_END);
+	if(lenfile == (unsigned long long) -1){
 		perror("In lseek\n");
 		return;
 	}
@@ -166,8 +107,8 @@ void send_file(int sockfd, char *file, char *ext) {
 		return;
 	}
 	int ret = 0;
-	char header[250];
-	if(sprintf(header,"HTTP/1.1 200 OK\nServer: web_prova\nContent-Length: %ld\nConnection: Keep-Alive\nContent-Type: %s\n\n",lenfile, ext) < 0) {
+	char header[BUF_SIZE];
+	if(sprintf(header,"HTTP/1.1 200 OK\nContent-Length: %lld\nConnection: Keep-Alive\nContent-Type: %s\n\n", lenfile, ext) < 0) {
 		perror("In sprintf: nothing written\n");
 		return;
 	}
@@ -175,12 +116,14 @@ void send_file(int sockfd, char *file, char *ext) {
 		perror("Sending Packet\n");
 		return;
 	}
-	while ((ret = read(fd, header, 250)) > 0 ){
-		if(send(sockfd,header,ret, MSG_NOSIGNAL) == -1) {
+	while ((ret = read(fd, header, 1024)) > 0 ){
+		if(send(sockfd, header, ret, MSG_NOSIGNAL) == -1) {
 			perror("Sending Packet\n");
+			close(fd);
 			return;
 		}
 	}
+	close(fd);
 }
 
 void send_image(int sockfd, char *file, char *ext, char *user_agent, int quality) {
@@ -202,9 +145,8 @@ void send_image(int sockfd, char *file, char *ext, char *user_agent, int quality
 			send_file(sockfd, lowq_file, ext);
 		}
 	}
-	else {
-		char *lowq_file = cache_by_quality(file, quality); 
-		send_file(sockfd, lowq_file, ext);
+	else { 
+		send_file(sockfd, file, ext);
 	}
 }
 
@@ -219,7 +161,7 @@ int respond(int sockfd, struct browser_request *request, bool toLog, FILE *logFi
 		return -1;
 	}
 
-	else if(strcmp(request->method, "GET") != 0 && strcmp(request->method, "HEAD") != 0  && strcmp(request->method, "get") != 0  && strcmp(request->method, "head") != 0) {
+	else if(strcasecmp(request->method, "GET") != 0 && strcasecmp(request->method, "HEAD") != 0) {
 		error_400(sockfd);
 		if(toLog) {
 			writeErrorLog("400 Bad Request", request, logFile);
@@ -235,11 +177,11 @@ int respond(int sockfd, struct browser_request *request, bool toLog, FILE *logFi
 			if(toLog) {
 				writeErrorLog("415 Unsupported Media Type", request, logFile);
 			}
-			return 0;
+			return -1;
 		}
 
 		else if(access(request->file_requested, R_OK) == -1) {
-			error_404(sockfd, request);
+			error_404(sockfd);
 			if(toLog) {
 				writeErrorLog("404 File Not Found", request, logFile);
 			}
