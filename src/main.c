@@ -77,7 +77,6 @@ void config_socket(int sockfd, bool KeepAlive) {
 }
 
 int read_request(int sockfd, char *buf, bool req) {
-
 	int rec = 0, byteread = 0;
 	do {
 		rec = recv(sockfd, buf+byteread, REQ_SIZE-byteread, MSG_NOSIGNAL);
@@ -92,13 +91,10 @@ int read_request(int sockfd, char *buf, bool req) {
 		usleep(1);
 
 	}while(rec > 0);
-	if(rec < 0) {
-		return 0;
-	}
 	if(req == true) {
 		error_408(sockfd);
 	}
-	return 0;
+	return 0;	 
 }
 
 void concatenation (struct browser_request *request, struct server_setting *setting) {

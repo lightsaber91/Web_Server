@@ -24,7 +24,7 @@
 #include "../src/shutdown.c"
 
 #define PEND_CONNECTION 100
-#define REQ_SIZE 2048
+#define REQ_SIZE 1024
 
 //Socket Stuff
 int skt_lst, skt_accpt;
