@@ -47,7 +47,7 @@ void parse_first_line(char *line, struct browser_request *request) {
 }
 
 struct browser_request *parse_browser_request(char *message) {
-
+	
 	struct browser_request *request;
 
 	request = malloc(sizeof(struct browser_request));
@@ -55,7 +55,6 @@ struct browser_request *parse_browser_request(char *message) {
 		perror("Memory Allocation Failure");
 		return NULL;
 	}
-
 	char *line, *save_pointer;
 	line = strtok_r(message, "\n\r", &save_pointer);
 	parse_first_line(line, request);
@@ -63,7 +62,5 @@ struct browser_request *parse_browser_request(char *message) {
 	while((line = strtok_r(NULL, "\n\r", &save_pointer)) != NULL) {
 		parse_request(line, request);
 	}
-
 	return request;
-
 }

@@ -19,10 +19,12 @@
 #define PAG_505 "<html><head>\n<title>505 Http Version Not Supported</title>\n</head><body>\n<h1>Http Version Not Supported</h1>\n</body></html>\n"
 #define ERR_505 "HTTP/1.1 505 Http Version Not Supported\nConnection: close\nContent-Type: text/html\n\n"
 
-#define BUF_SIZE 1024
+#define BUF_SIZE_0 1024
+#define BUF_SIZE_1 4096
+#define BUF_SIZE_2 16384
+#define BUF_SIZE_3 32768
 
-extern char *wurfl_location;
-extern bool use_wurfl;
+
 
 //Struct used for type file
 struct extn{
@@ -62,7 +64,7 @@ void error_505(int sockfd);
 //Send header or file
 void send_header(int sockfd, char *file);
 void send_file(int sockfd, char *file, char *ext);
-void send_image(int sockfd, char *file, char *ext, char *user_agent, int quality);
+void send_image(struct server_setting *s, int sockfd, char *file, char *ext, char *user_agent, int quality);
 
 //Generic answer
-int respond(int sockfd, struct browser_request *request, bool toLog, FILE *logFile);
+int respond(struct server_setting *s, int sockfd, struct browser_request *request, bool toLog, FILE *logFile);

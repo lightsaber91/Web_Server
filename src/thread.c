@@ -1,19 +1,5 @@
 #include "../lib/thread.h"
 
-void close_thread(int socket, char *in, struct browser_request *request) {
-
-	if(shutdown(socket, SHUT_RDWR) == -1) {
-		perror("Shutting down the socket\n");
-	}
-	if(in != NULL) {
-		free(in);
-	}
-	if(request != NULL) {
-		free(request);
-	}
-	pthread_exit(NULL);
-}
-
 void create_thread(struct server_setting *setting, int socket, bool toLog, FILE *LogFile) {
 
 	struct thread_job *job = malloc(sizeof(struct thread_job));
@@ -21,8 +7,8 @@ void create_thread(struct server_setting *setting, int socket, bool toLog, FILE 
 		perror("Memory Allocation Failure\n");
 		//Non viene effettuata la exit() poichè altri thread potrebbero già essere in esecuzione
 		//Annulliamo quindi solo la creazione del nuovo
-		if(shutdown(socket, SHUT_RDWR) == -1) {
-			perror("Shutting down the socket\n");
+		if(close(socket) == -1) {
+			perror("Closing Socket\n");
 		}
 		return;
 	}
@@ -51,20 +37,22 @@ void *manage_connection(void *p){
 
 	while(job->maxKeepAliveReq > 0) {
 
+
+
 		char *in_request = (char *)malloc(REQ_SIZE*sizeof(char));
 		if(in_request == NULL) {
-			close_thread(job->socket, NULL, NULL);
+			break;
 		}
 
-		if(read_request(job->socket, in_request, firstReq) != 1)
+		if(read_request(job->socket, in_request, firstReq) != 1) {
 			break; 
+		}
 
 		job->maxKeepAliveReq--;
-
 		struct browser_request *request;
 		request = parse_browser_request(in_request);
 		if(request == NULL) {
-			close_thread(job->socket, in_request, NULL);
+			break;
 		}
 		concatenation(request, job->s);
 
@@ -72,18 +60,19 @@ void *manage_connection(void *p){
 			writeConnectionLog(LogFile, request);
 		}
 
-		if(respond(job->socket, request, job->toLog, job->LogFile) == -1) {
-			close_thread(job->socket, in_request, request);
+		if(respond(job->s, job->socket, request, job->toLog, job->LogFile) == -1) {
+			break;
 		}
 		free(request);
 		free(in_request);
-		if(job->s->KeepAlive == false) {
+		if(job->s->KeepAlive != true) {
 			break;
-		}
-
+		} 
 		ConfigKeepAliveTimeout(job->socket, job->s->KeepAliveTimeout);
 		firstReq = false;
 	}
-	shutdown(job->socket, SHUT_RDWR);
+	if(close(job->socket) == -1) {
+		perror("Closing Socket\n");
+	}
 	pthread_exit(NULL);
 }

@@ -15,6 +15,8 @@
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
 #include <signal.h>
+#include <libxml/xmlmemory.h>
+#include <libxml/parser.h>
 #include "../src/config.c"
 #include "../src/parse_request.c"
 #include "../src/logger.c"
@@ -22,12 +24,7 @@
 #include "../src/shutdown.c"
 
 #define PEND_CONNECTION 100
-#define REQ_SIZE 1000
-
-//Settings Variable
-struct server_setting *setting;
-char *wurfl_location;
-bool use_wurfl;
+#define REQ_SIZE 2048
 
 //Socket Stuff
 int skt_lst, skt_accpt;
@@ -35,6 +32,9 @@ struct sockaddr_in skaddr;
 socklen_t socksize;
 struct timeval timeout;
 int enable_keep_alive = 1;
+
+//Configuration stuff
+struct server_setting *setting;
 
 //Log File Stuff
 FILE *LogFile;

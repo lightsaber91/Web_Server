@@ -1,5 +1,16 @@
 #include "../lib/responses.h"
 
+int choose_buf_size(unsigned long long len) {
+	if(len/BUF_SIZE_0 < 20)
+		return BUF_SIZE_0;
+	if(len/BUF_SIZE_1 < 20)
+		return BUF_SIZE_1;
+	if(len/BUF_SIZE_2 < 20)
+		return BUF_SIZE_2;
+	else
+		return BUF_SIZE_3;
+}
+
 void error_505(int sockfd) {
 
 	if(send(sockfd, ERR_505, strlen(ERR_505), MSG_NOSIGNAL) < 0) {
@@ -79,7 +90,7 @@ void send_header(int sockfd, char *file) {
 		perror("In lseek\n");
 		return;
 	}
-	char header[BUF_SIZE];
+	char header[BUF_SIZE_0];
 	if(sprintf(header,"HTTP/1.1 200 OK\nContent-Length: %lld\nConnection: close\nContent-Type: text/html\n\n",lenfile) < 0) {
 		perror("In sprintf: nothing written\n");
 		return;
@@ -107,7 +118,8 @@ void send_file(int sockfd, char *file, char *ext) {
 		return;
 	}
 	int ret = 0;
-	char header[BUF_SIZE];
+	int size = choose_buf_size(lenfile);
+	char header[size];
 	if(sprintf(header,"HTTP/1.1 200 OK\nContent-Length: %lld\nConnection: Keep-Alive\nContent-Type: %s\n\n", lenfile, ext) < 0) {
 		perror("In sprintf: nothing written\n");
 		return;
@@ -116,7 +128,7 @@ void send_file(int sockfd, char *file, char *ext) {
 		perror("Sending Packet\n");
 		return;
 	}
-	while ((ret = read(fd, header, 1024)) > 0 ){
+	while ((ret = read(fd, header, size)) > 0 ){
 		if(send(sockfd, header, ret, MSG_NOSIGNAL) == -1) {
 			perror("Sending Packet\n");
 			close(fd);
@@ -126,12 +138,12 @@ void send_file(int sockfd, char *file, char *ext) {
 	close(fd);
 }
 
-void send_image(int sockfd, char *file, char *ext, char *user_agent, int quality) {
+void send_image(struct server_setting *s, int sockfd, char *file, char *ext, char *user_agent, int quality) {
 
-	if(use_wurfl == true) {
+	if(s->use_wurfl == true) {
 		struct device_property *property = malloc(sizeof(struct device_property));
 		if(property != NULL) { 
-			if(parse_UA(user_agent, property, wurfl_location) == 0) {
+			if(parse_UA(user_agent, property, s->start) == 0) {
 				char *file_resized = cache_by_resolution(property->resolution_width, property->resolution_height, file);
 				send_file(sockfd, file_resized, ext);
 			}
@@ -150,7 +162,7 @@ void send_image(int sockfd, char *file, char *ext, char *user_agent, int quality
 	}
 }
 
-int respond(int sockfd, struct browser_request *request, bool toLog, FILE *logFile) {
+int respond(struct server_setting *s, int sockfd, struct browser_request *request, bool toLog, FILE *logFile) {
 
 
 	if(strcmp(request->http_version, "HTTP/1.0") != 0 && strcmp(request->http_version, "HTTP/1.1") != 0) {
@@ -195,7 +207,7 @@ int respond(int sockfd, struct browser_request *request, bool toLog, FILE *logFi
 
 		else {
 			if(strncmp(extension, "image", 5) == 0) {
-				send_image(sockfd, request->file_requested, extension, request->user_agent, request->accept_quality);
+				send_image(s, sockfd, request->file_requested, extension, request->user_agent, request->accept_quality);
 			}
 			else 
 				send_file(sockfd, request->file_requested, extension);

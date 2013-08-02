@@ -9,6 +9,7 @@ struct thread_job {
 	int maxKeepAliveReq;
 	bool toLog;
 	FILE *LogFile;
+	xmlNode *start;
 };
 
 void *manage_connection(void *p);

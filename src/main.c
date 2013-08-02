@@ -4,20 +4,30 @@ int main() {
 
 	signal(SIGTERM, sigterm_handler);
 	
-	bool toLog = false;
-
 	setting = parse_config_file();
 
+	bool toLog = false;
 	if( setting->log_lvl > -1 ) {
 		LogFile = openLogFile(setting->log_path);
 		if(LogFile != NULL) 
 			toLog = true;
 		
 	}
+	if(setting->use_wurfl == true) {
+		setting->doc = initDoc(setting->wurfl_location);
+		if(setting->doc == NULL) {
+			setting->use_wurfl = false;
+		}
+		setting->start = getDevicesNode(setting->doc);
+		if(setting->start == NULL) {
+			xmlFree(setting->doc);
+			setting->use_wurfl = false;
+		}
+	}
+
 	create_and_bind();
 
 	for(;;) {
-
 
 		if(listen(skt_lst, PEND_CONNECTION) == -1) {
 			perror("Socket Listening Error\n");
