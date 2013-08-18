@@ -2,11 +2,18 @@
 
 int get_quality_factor(char *accept_type) {
 
-	char *search = strstr(accept_type, "image");
+	char *search = strstr(accept_type, "image/jpg");
 	if(search != NULL) {
 		double quality;
 		strtok(search, "=");
 		quality = atof(strtok(NULL,","))*100;
+		return (int)quality;
+	}
+	else {
+		search = strstr(accept_type, "image");
+		double quality;
+		strtok(search, "=");
+		quality = atof(strtok(NULL,"\n"))*100;
 		return (int)quality;
 	}
 	else {
