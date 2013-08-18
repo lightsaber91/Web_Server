@@ -6,6 +6,7 @@ struct server_setting {
 	char *home_page;
 	char *log_path;
 	char *wurfl_location;
+	char *mime_type_file;
 	int port;
 	int log_lvl;
 	int timeout;

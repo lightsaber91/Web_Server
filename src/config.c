@@ -91,6 +91,11 @@ void write_parameter(char *line, struct server_setting *s) {
 		s->user_agent_max_attempts = atoi(strtok(NULL, ";"));
 
 	}
+	else if ( strncmp(line, "MIME-TYPES=", 11) == 0) {
+
+		strtok(line, "=");
+		s->mime_type_file = strtok(NULL, ";");
+	}
 }
 
 struct server_setting *parse_config_file() {

@@ -7,8 +7,14 @@ int choose_buf_size(unsigned long long len) {
 		return BUF_SIZE_1;
 	if(len/BUF_SIZE_2 < 20)
 		return BUF_SIZE_2;
-	else
+	if(len/BUF_SIZE_3 < 20)
 		return BUF_SIZE_3;
+	if(len/BUF_SIZE_4 < 20)
+		return BUF_SIZE_4;
+	if(len/BUF_SIZE_5 < 20)
+		return BUF_SIZE_5;
+	else
+		return BUF_SIZE_6;
 }
 
 void error_505(int sockfd) {
@@ -99,6 +105,7 @@ void send_header(int sockfd, char *file) {
 		perror("Sending Packet\n");
 		return;
 	}
+	close(fd);
 }
 
 void send_file(int sockfd, char *file, char *ext) {
@@ -202,7 +209,7 @@ int respond(struct server_setting *s, int sockfd, struct browser_request *reques
 
 		else if(strcmp(request->method, "HEAD") == 0 || strcmp(request->method, "head") == 0) {
 			send_header(sockfd, request->file_requested);
-			return -1;
+			return 0;
 		}
 
 		else {

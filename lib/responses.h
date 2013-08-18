@@ -19,10 +19,13 @@
 #define PAG_505 "<html><head>\n<title>505 Http Version Not Supported</title>\n</head><body>\n<h1>Http Version Not Supported</h1>\n</body></html>\n"
 #define ERR_505 "HTTP/1.1 505 Http Version Not Supported\nConnection: close\nContent-Type: text/html\n\n"
 
-#define BUF_SIZE_0 1024
-#define BUF_SIZE_1 4096
-#define BUF_SIZE_2 16384
-#define BUF_SIZE_3 32768
+#define BUF_SIZE_0 512
+#define BUF_SIZE_1 1024
+#define BUF_SIZE_2 2048
+#define BUF_SIZE_3 4096
+#define BUF_SIZE_4 8192
+#define BUF_SIZE_5 16384
+#define BUF_SIZE_6 32768
 
 
 
@@ -31,24 +34,7 @@ struct extn{
 	char *ext;
 	char *mediatype;
 };
-
-//Possible media types
-struct extn extensions[] ={
- {"gif", "image/gif" },
- {"txt", "text/plain" },
- {"jpg", "image/jpg" },
- {"jpeg","image/jpeg"},
- {"png", "image/png" },
- {"ico", "image/ico" },
- {"zip", "image/zip" },
- {"gz",  "image/gz"  },
- {"tar", "image/tar" },
- {"htm", "text/html" },
- {"html","text/html" },
- {"pdf","application/pdf"},
- {"zip","application/octet-stream"},
- {"rar","application/octet-stream"},
- {0,0} };
+struct extn *extensions;
 
 //Verify if file is supported from server
 char *supported_type(char *file);
@@ -61,7 +47,7 @@ void error_408(int sockfd);
 void error_415(int sockfd);
 void error_505(int sockfd);
 
-//Send header or file
+//Send header, file, image
 void send_header(int sockfd, char *file);
 void send_file(int sockfd, char *file, char *ext);
 void send_image(struct server_setting *s, int sockfd, char *file, char *ext, char *user_agent, int quality);

@@ -1,7 +1,4 @@
 #include "../lib/thread.h"
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netinet/tcp.h>
 
 void create_thread(struct server_setting *setting, int socket, bool toLog, FILE *LogFile) {
 
@@ -26,7 +23,6 @@ void create_thread(struct server_setting *setting, int socket, bool toLog, FILE 
 
 void *manage_connection(void *p){
 
-	//int one = 1;
 	bool firstReq = true;
 
 	struct thread_job *job = (struct thread_job *)p;
@@ -38,7 +34,7 @@ void *manage_connection(void *p){
         timeout.tv_usec = 0;
 
 	config_socket(job->socket, job->s->KeepAlive);
-	//setsockopt(job->socket, SOL_TCP, TCP_NODELAY, &one, sizeof(one));
+
 	while(job->maxKeepAliveReq > 0) {
 
 		char *in_request = (char *)malloc(REQ_SIZE*sizeof(char));

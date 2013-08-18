@@ -5,6 +5,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <string.h>
 #include <sys/sendfile.h>
 #include <sys/stat.h>
@@ -22,6 +23,7 @@
 #include "../src/logger.c"
 #include "../src/responses.c"
 #include "../src/shutdown.c"
+#include "../src/mime_type.c"
 
 #define PEND_CONNECTION 100
 #define REQ_SIZE 1024
@@ -31,7 +33,6 @@ int skt_lst, skt_accpt;
 struct sockaddr_in skaddr;
 socklen_t socksize;
 struct timeval timeout;
-int enable_keep_alive = 1;
 
 //Configuration stuff
 struct server_setting *setting;
@@ -49,5 +50,8 @@ int read_request(int sockfd, char *buf, bool req);
 void ConfigKeepAliveTimeout(int sockfd, int KeepAliveTimeout);
 
 void config_socket(int sockfd, bool KeepAlive);
+
+//extern struct extn;
+//extern struct extn *extensions;
 
 #include "../src/thread.c"

@@ -5,6 +5,7 @@ int main() {
 	signal(SIGTERM, sigterm_handler);
 	
 	setting = parse_config_file();
+	extensions = load_mime_type(setting->mime_type_file);
 
 	bool toLog = false;
 	if( setting->log_lvl > -1 ) {
@@ -61,9 +62,11 @@ void ConfigKeepAliveTimeout(int sockfd, int KeepAliveTimeout) {
 }
 
 void config_socket(int sockfd, bool KeepAlive) {
+	int reuse = 1;
+	setsockopt(sockfd, SOL_TCP, TCP_NODELAY, &reuse, sizeof(reuse));
 
 	if(KeepAlive == true) {
-		if(setsockopt(sockfd, SOL_SOCKET, SO_KEEPALIVE, &enable_keep_alive, sizeof(int)) < 0) {
+		if(setsockopt(sockfd, SOL_SOCKET, SO_KEEPALIVE, &reuse, sizeof(reuse)) < 0) {
 			perror("In SetSockOpt\n");
 		}
 	}
