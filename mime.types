@@ -1,0 +1,27 @@
+#Configuration file for mime types
+#write here the file that your web server is able to send over the network
+#
+#ES:
+#jpg,image/jpg
+#
+#IF there is this symbol '#' the types will be ignored, after every type definition go to new line
+#
+#STARTING DEFINITION
+#
+gif,image/gif
+txt,text/plain
+jpg,image/jpg
+jpeg,image/jpeg
+png,image/png
+ico,image/ico
+zip,image/zip
+gz,image/gz
+tar,image/tar
+htm,text/html
+html,text/html
+pdf,application/pdf
+zip,application/octet-stream
+rar,application/octet-stream
+#
+#THE FILE MUST END WITH EOF;
+EOF
