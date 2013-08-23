@@ -181,6 +181,9 @@ void create_and_bind() {
 	}
 
 	if(bind(skt_lst, (struct sockaddr *)&skaddr, socksize) == -1){
+		if(setting->port < 1024) {
+			fprintf(sdterr, "Please Use port above 1024 or launch server like root\n");
+		}
 		perror("IP or Port Addresses probably in Use\n");
 		exit(EXIT_FAILURE);
 	}
