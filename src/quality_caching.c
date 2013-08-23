@@ -1,5 +1,7 @@
 #include "../lib/quality_caching.h"
-
+/**
+ * This function creates the directories where the images should be saved.
+ */
 char *create_new_q_dir(int quality) {
 
 	char *cache_dir = malloc(strlen(setting->root_folder)+strlen(CACHE)+1);
@@ -7,6 +9,7 @@ char *create_new_q_dir(int quality) {
 		perror("Memory Allocation Failure\n");
 		return NULL;
 	}
+	//name CACHE directory inside server ROOT
 	if(sprintf(cache_dir,"%s%s", setting->root_folder, CACHE) < 0) {
 		perror("In sprintf: nothing written\n");
 		return NULL;
@@ -16,12 +19,12 @@ char *create_new_q_dir(int quality) {
 		perror("Memory Allocation Failure\n");
 		return NULL;
 	}
-
+	//name directory for correct image compression inside CACHE
 	if(sprintf(q_dir,"%sq_%d",cache_dir, quality) < 0) {
 		perror("In sprintf: nothing written\n");
 		return NULL;
 	}
-
+	//control if previous directory exist otherwise will be created
 	if(access(cache_dir, F_OK) == 0) {
 		if(access(q_dir, F_OK) == 0) {
 			return q_dir;
@@ -45,7 +48,10 @@ char *create_new_q_dir(int quality) {
 	}
 	return NULL;
 }
-
+/**
+ * This function search compressed images in correct directories, launch the function to create it if not exists, 
+ * and if compressed image doesen't exist call the function to compress it.
+ */
 char *verify_existence_q(char *file, int quality) {
 
 	char *filename = malloc(strlen(file)-strlen(setting->root_folder)+1);
@@ -75,7 +81,9 @@ char *verify_existence_q(char *file, int quality) {
 		return resize_by_quality(new_file, file, quality);
 	}
 }
-
+/**
+ * Verify if compressed version of image exists and, if no error occurs, return file compressed, otherwise return original file.
+ */
 char *cache_by_quality(char *file, int quality) {
 	char *new_file = verify_existence_q(file, quality);
 	if(new_file == NULL) {

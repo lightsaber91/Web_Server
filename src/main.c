@@ -1,20 +1,28 @@
 #include "../lib/main.h"
 
+/**
+ * Web Server main function.
+ * Set signal-handler for terminating, parse configuration file and mime types file.
+ * Create connections and launch threads to manage these. 
+ */
 int main() {
-
+	//Initiate signal handler for sigterm
 	signal(SIGTERM, sigterm_handler);
-	
+	//Read conf file and save parameters
 	setting = parse_config_file();
+	//Load mime types from file
 	extensions = load_mime_type(setting->mime_type_file);
 
 	bool toLog = false;
 	if( setting->log_lvl > -1 ) {
+		//Open Log File
 		LogFile = openLogFile(setting->log_path);
 		if(LogFile != NULL) 
 			toLog = true;
 		
 	}
 	if(setting->use_wurfl == true) {
+		//Open wurfl file and build the xml three
 		setting->doc = initDoc(setting->wurfl_location);
 		if(setting->doc == NULL) {
 			setting->use_wurfl = false;
@@ -25,29 +33,39 @@ int main() {
 			setting->use_wurfl = false;
 		}
 	}
-
+	//Create socket
 	create_and_bind();
 
 	for(;;) {
-
-		if(listen(skt_lst, PEND_CONNECTION) == -1) {
-			perror("Socket Listening Error\n");
-			return(EXIT_FAILURE);
+		if(conn < max_conn) {
+			//Take connection and launch thread to manage it
+			conn++;
+			if(listen(skt_lst, setting->pend_connection) == -1) {
+				perror("Socket Listening Error\n");
+				return(EXIT_FAILURE);
+			}
+	
+			if((skt_accpt = accept(skt_lst, (struct sockaddr *)&skaddr, &socksize)) == -1){
+				perror("Socket Accepting Error\n");
+				return(EXIT_FAILURE);
+			}
+			create_thread(setting, skt_accpt, toLog, LogFile);
 		}
-
-		if((skt_accpt = accept(skt_lst, (struct sockaddr *)&skaddr, &socksize)) == -1){
-			perror("Socket Accepting Error\n");
-			return(EXIT_FAILURE);
+		else {
+			sleep(1);
 		}
-		create_thread(setting, skt_accpt, toLog, LogFile);
 	}
-	if(shutdown(skt_lst, SHUT_RDWR) == -1) {
+	//Close socket and exit
+	if(close(skt_lst) == -1) {
 		perror("Socket Closing Error\n");
 	}
 	return EXIT_SUCCESS;
 
 }
 
+/**
+ * Set the connection timeout
+ */
 void ConfigKeepAliveTimeout(int sockfd, int KeepAliveTimeout) {
 
 	timeout.tv_sec = KeepAliveTimeout;
@@ -61,9 +79,18 @@ void ConfigKeepAliveTimeout(int sockfd, int KeepAliveTimeout) {
         }
 }
 
+/**
+ * Set socketoption like keepalive, sendbuffer dimension, and keep alive timeout
+ */
 void config_socket(int sockfd, bool KeepAlive) {
 	int reuse = 1;
-	setsockopt(sockfd, SOL_TCP, TCP_NODELAY, &reuse, sizeof(reuse));
+	int sendbuff = 65536;
+	if(setsockopt(sockfd, SOL_SOCKET, SO_SNDBUF, &sendbuff, sizeof(sendbuff)) < 0) {
+		perror("In SetSockOpt\n");
+	}
+	if(setsockopt(sockfd, SOL_TCP, TCP_NODELAY, &reuse, sizeof(reuse)) < 0) {
+		perror("In SetSockOpt\n");
+	}
 
 	if(KeepAlive == true) {
 		if(setsockopt(sockfd, SOL_SOCKET, SO_KEEPALIVE, &reuse, sizeof(reuse)) < 0) {
@@ -79,6 +106,9 @@ void config_socket(int sockfd, bool KeepAlive) {
 
 }
 
+/**
+ * Read request from the socket and save in buffer
+ */
 int read_request(int sockfd, char *buf, bool req) {
 	int rec = 0, byteread = 0;
 	do {
@@ -100,6 +130,10 @@ int read_request(int sockfd, char *buf, bool req) {
 	return 0;	 
 }
 
+/**
+ * Merge page request from browser and browser's root folder
+ * to obtain correct path of phisical file in the server
+ */
 void concatenation (struct browser_request *request, struct server_setting *setting) {
 
 	if(strcmp(request->file_requested, "/") == 0) {
@@ -125,6 +159,9 @@ void concatenation (struct browser_request *request, struct server_setting *sett
 
 }
 
+/**
+ * Create socket and permform bind
+ */
 void create_and_bind() {
 	int reuse = 1;
 	skt_lst = socket(AF_INET,SOCK_STREAM,0);

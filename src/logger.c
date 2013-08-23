@@ -1,5 +1,8 @@
 #include "../lib/logger.h"
 
+/**
+ * Open Log File.
+ */
 FILE *openLogFile(char *path) {
 	FILE *log = fopen(path, "a+");
 	if(log == NULL) {
@@ -8,13 +11,18 @@ FILE *openLogFile(char *path) {
 	return log;
 }
 
+/**
+ * Write on Log File information concerning connection and client request.
+ */
 void writeConnectionLog(FILE *log, struct browser_request *request) {
 
+	//Obtain lock on log file
+	//Flock file is thread-safe
 	flockfile(log);
-
+	//Initialize time struct
 	time_t now = time(NULL);
 	struct tm *lTime = localtime(&now);
-
+	//String where info will be saved
 	char *no_date = "[--/--/---- ; --:--:--] ";
 	char date[strlen(no_date)], info[1000];
 
@@ -47,6 +55,9 @@ void writeConnectionLog(FILE *log, struct browser_request *request) {
 	funlockfile(log);
 }
 
+/**
+ * Write server error on Log.
+ */
 void writeErrorLog(char *error, struct browser_request *request, FILE *log) {
 
 	flockfile(log);

@@ -1,22 +1,24 @@
 #include "../lib/responses.h"
 
+/**
+ * According to file length ,choose dimension of send buffer.
+ */
 int choose_buf_size(unsigned long long len) {
-	if(len/BUF_SIZE_0 < 20)
+	if(len/BUF_SIZE_0 < 5)
 		return BUF_SIZE_0;
-	if(len/BUF_SIZE_1 < 20)
+	if(len/BUF_SIZE_1 < 5)
 		return BUF_SIZE_1;
-	if(len/BUF_SIZE_2 < 20)
+	if(len/BUF_SIZE_2 < 5)
 		return BUF_SIZE_2;
-	if(len/BUF_SIZE_3 < 20)
+	if(len/BUF_SIZE_3 < 5)
 		return BUF_SIZE_3;
-	if(len/BUF_SIZE_4 < 20)
-		return BUF_SIZE_4;
-	if(len/BUF_SIZE_5 < 20)
-		return BUF_SIZE_5;
 	else
-		return BUF_SIZE_6;
+		return BUF_SIZE_4;
 }
 
+/**
+ * Send error 505: Http Version not supported.
+ */
 void error_505(int sockfd) {
 
 	if(send(sockfd, ERR_505, strlen(ERR_505), MSG_NOSIGNAL) < 0) {
@@ -30,6 +32,9 @@ void error_505(int sockfd) {
 	}
 }
 
+/**
+ * Send Error 400: Bad Request.
+ */
 void error_400(int sockfd) {
 
 	if(send(sockfd, ERR_400, strlen(ERR_400), MSG_NOSIGNAL) < 0) {
@@ -44,6 +49,9 @@ void error_400(int sockfd) {
 	close(sockfd);
 }
 
+/**
+ * Send Error 408: Request Time-out.
+ */
 void error_408(int sockfd) {
 
 	if(send(sockfd, ERR_408, strlen(ERR_408), MSG_NOSIGNAL) < 0) {
@@ -57,6 +65,9 @@ void error_408(int sockfd) {
 	}
 }
 
+/**
+ * Send Error 404: File not Found.
+ */
 void error_404(int sockfd) {
 
 	if(send(sockfd, ERR_404, strlen(ERR_404), MSG_NOSIGNAL) < 0) {
@@ -69,6 +80,9 @@ void error_404(int sockfd) {
 	}
 }
 
+/**
+ * Send Error 415: Unsupported Media Type.
+ */
 void error_415(int sockfd) {
 
 	if(send(sockfd, ERR_415, strlen(ERR_415), MSG_NOSIGNAL) < 0) {
@@ -81,6 +95,9 @@ void error_415(int sockfd) {
 	}
 }
 
+/**
+ * Send HTTP header of file.
+ */
 void send_header(int sockfd, char *file) {
 	int fd = open(file, O_RDONLY, S_IREAD | S_IWRITE);
 	if(fd == -1){
@@ -108,6 +125,9 @@ void send_header(int sockfd, char *file) {
 	close(fd);
 }
 
+/**
+ * General function that send every file supported by the server.
+ */
 void send_file(int sockfd, char *file, char *ext) {
 	int fd = open(file, O_RDONLY, S_IREAD | S_IWRITE);
 	if(fd == -1){
@@ -136,7 +156,7 @@ void send_file(int sockfd, char *file, char *ext) {
 		return;
 	}
 	while ((ret = read(fd, header, size)) > 0 ){
-		if(send(sockfd, header, ret, MSG_NOSIGNAL) == -1) {
+		if(send(sockfd, header, ret, MSG_NOSIGNAL /*| MSG_MORE*/) == -1) {
 			perror("Sending Packet\n");
 			close(fd);
 			return;
@@ -145,6 +165,10 @@ void send_file(int sockfd, char *file, char *ext) {
 	close(fd);
 }
 
+/**
+ * This function resize image if enabled in setting, than call send_file function,
+ * otherwise call send_file on image without resizing it.
+ */
 void send_image(struct server_setting *s, int sockfd, char *file, char *ext, char *user_agent, int quality) {
 
 	if(s->use_wurfl == true) {
@@ -169,10 +193,15 @@ void send_image(struct server_setting *s, int sockfd, char *file, char *ext, cha
 	}
 }
 
+/**
+ * Analize http field in parsed request, in case of errors send the correct error message,
+ * in case of HEADER request send only the header and in case of GET send the file.
+ * If error occurs writes in the log file. 
+ */
 int respond(struct server_setting *s, int sockfd, struct browser_request *request, bool toLog, FILE *logFile) {
 
 
-	if(strcmp(request->http_version, "HTTP/1.0") != 0 && strcmp(request->http_version, "HTTP/1.1") != 0) {
+	if(strcasecmp(request->http_version, "HTTP/1.0") != 0 && strcasecmp(request->http_version, "HTTP/1.1") != 0) {
 		error_505(sockfd);
 		if(toLog) {
 			writeErrorLog("505 Http Version Not Supported", request, logFile);
@@ -224,6 +253,9 @@ int respond(struct server_setting *s, int sockfd, struct browser_request *reques
 	return -1;
 }
 
+/**
+ * Check, in mime type struct, if requested file type is supported.
+ */
 char *supported_type(char *file) {
 	char *extension = NULL;
 	char *ap = strrchr(file, '.');

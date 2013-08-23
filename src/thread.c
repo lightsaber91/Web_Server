@@ -1,5 +1,9 @@
 #include "../lib/thread.h"
 
+/**
+ * This function create structs and save there everything threads need,
+ * than launch new thread with pthread_create.
+ */
 void create_thread(struct server_setting *setting, int socket, bool toLog, FILE *LogFile) {
 
 	struct thread_job *job = malloc(sizeof(struct thread_job));
@@ -21,18 +25,20 @@ void create_thread(struct server_setting *setting, int socket, bool toLog, FILE 
 	pthread_create(&job->tid, NULL, manage_connection, job);
 }
 
+/**
+ * The web server core is here. This is how thread works.
+ * After read from socket the thread respond, even with errors, and/or close connection, than terminate its execution.
+ */
 void *manage_connection(void *p){
 
 	bool firstReq = true;
 
 	struct thread_job *job = (struct thread_job *)p;
-
+	//pthread_detach is used because when a thread terminate all its memory will be automatically released.
 	pthread_detach(pthread_self());
-	//pthread_setschedprio(pthread_self(), HIGHPRIORITY);
-
+	//Set socket timeout.
         timeout.tv_sec = job->s->timeout;
         timeout.tv_usec = 0;
-
 	config_socket(job->socket, job->s->KeepAlive);
 
 	while(job->maxKeepAliveReq > 0) {
@@ -68,6 +74,7 @@ void *manage_connection(void *p){
 		ConfigKeepAliveTimeout(job->socket, job->s->KeepAliveTimeout);
 		firstReq = false;
 	}
+	conn--;
 	if(close(job->socket) == -1) {
 		perror("Closing Socket\n");
 	}

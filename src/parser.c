@@ -1,7 +1,11 @@
 #include "../lib/parser.h"
 
+/**
+ * Initialize xml file taken from conf file
+ */
 xmlDoc *initDoc(char *wurfl_location) {
 	xmlDoc *doc;
+	//try to access the file
 	if (access(wurfl_location, R_OK) == 0) {
         	//build the tree from the xml file
         	doc = xmlReadFile(wurfl_location, NULL, 0);
@@ -15,6 +19,9 @@ xmlDoc *initDoc(char *wurfl_location) {
 	return NULL;
 }
 
+/**
+ * Positioning pointer to devices node in the xml file
+ */
 xmlNode *getDevicesNode(xmlDoc *doc) {
 	xmlNode *start = xmlDocGetRootElement(doc);
        	if (start == NULL) {
@@ -34,6 +41,9 @@ xmlNode *getDevicesNode(xmlDoc *doc) {
 	return NULL;
 }
 
+/**
+ * Verify existence of device in xml file
+ */
 int findDeviceNodeByUserAgent(xmlNode *node, char *header_useragent, struct device_property *property) {
 	xmlNode *cur = node;
 	//start checking every device
@@ -59,6 +69,9 @@ int findDeviceNodeByUserAgent(xmlNode *node, char *header_useragent, struct devi
 	return -1;
 }
 
+/**
+ * Reduce user agent string
+ */
 void reduce_user_agent(char *user_agent) {
 	char* end;
     	int len = strlen(user_agent);
@@ -75,26 +88,39 @@ void reduce_user_agent(char *user_agent) {
     	*(end+1) = '\0';
 }
 
+/**
+ * return device id
+ */
 char *getDeviceId(xmlNode *device)
 {
 	return (char *)xmlGetProp((device), (const xmlChar *)"id");
 }
 
+/**
+ * return device fallback id
+ */
 char *getDeviceFallBackId(xmlNode *device)
 {
 	return (char *)xmlGetProp((device), (const xmlChar *)"fall_back");
 }
 
+/**
+ * Obtained the device node this function search the dimensions in xml file.
+ */
 void getDeviceDimension(xmlNode *node, int *width, int *height) {
 	xmlNode *cur = node;
+	//start checking every node
 	cur = cur->xmlChildrenNode;
 	xmlChar *id, *name;
 	while(cur != NULL) {
+		//check if is a group node
 		if(strcmp((char *) cur->name, "group") == 0) {
 			id = xmlGetProp(cur, (const xmlChar *)"id");
+			//check if is a display node
 			if(strcmp((char *)id, "display") == 0) {
 				cur = cur->xmlChildrenNode;
 				while(cur != NULL) {
+					//check if is a capability node
 					if(strcmp((char *) cur->name, "capability") == 0) {
 						if(*width != 0 && *height != 0) {
 							break;
@@ -120,12 +146,18 @@ void getDeviceDimension(xmlNode *node, int *width, int *height) {
 	return;
 }
 
+/**
+ * General function to searche devices in wurfl and find their properties.
+ */ 
 int parse_UA(char *user_agent, struct device_property *property, xmlNode *start) {
 
+	//max_attempts defined in conf file
 	int max_attempts = setting->user_agent_max_attempts;
 	xmlNode *cur = start;
+	//search device by user agent
 	while(user_agent != NULL && max_attempts > 0) {
 		if(findDeviceNodeByUserAgent(cur, user_agent, property) == 0) {
+			//save its property in a struct
 			property->device_id = getDeviceId(property->device);
 			property->device_fallback_id = getDeviceFallBackId(property->device);
 			property->resolution_width = 0;

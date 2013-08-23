@@ -1,5 +1,11 @@
-#define conf_file "/home/lightsaber/.devel/Web_Server/server.conf"
+/**
+ * The config file will be located in the same directory of server
+ */
+#define conf_file "/opt/tvs/server.conf"
 
+/**
+ * Definition of server setting and every parameter
+ */
 struct server_setting {
 	char *ip;
 	char *root_folder;
@@ -15,10 +21,8 @@ struct server_setting {
 	int user_agent_max_attempts;
 	bool KeepAlive;
 	bool use_wurfl;
+	long pend_connection;
 	xmlDoc *doc;
 	xmlNode *start;
 };
 
-void write_parameter(char *line, struct server_setting *s);
-
-struct server_setting *parse_config_file();

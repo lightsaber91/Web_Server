@@ -1,5 +1,8 @@
 #include "../lib/config.h"
 
+/**
+ * Compare line read and save data in correct variable.
+ */
 void write_parameter(char *line, struct server_setting *s) {
 
 	if ( strncmp(line, "IP=", 3) == 0 ) {
@@ -96,19 +99,26 @@ void write_parameter(char *line, struct server_setting *s) {
 		strtok(line, "=");
 		s->mime_type_file = strtok(NULL, ";");
 	}
-}
+	else if ( strncmp(line, "BACKLOG=", 8) == 0) {
 
+		strtok(line, "=");
+		s->pend_connection = atol(strtok(NULL, ";"));
+	}
+}
+/**
+ * Create a struct for server file configuration parameters.
+ * Read parameters from file and save into the struct variables. 
+ */
 struct server_setting *parse_config_file() {
 
 	struct server_setting *s = malloc(sizeof(struct server_setting));
-
 	if(s == NULL) {
 		perror("Memory Allocation Failure\n");
 		exit(EXIT_FAILURE);
 	}
 
 	size_t n = 10;
-
+	//Open conf file
 	FILE *conf = fopen(conf_file, "r");
 	if(conf == NULL) {
 		perror("Configuration File NOT FOUND\n");
@@ -118,7 +128,7 @@ struct server_setting *parse_config_file() {
 	while(1) {
 
 		char *line = NULL;
-
+		//read entire line from file
 		if(getdelim(&line, &n, '\n', conf) == -1) {
 			perror("In getdelim\n");
 		}
@@ -128,11 +138,12 @@ struct server_setting *parse_config_file() {
 		}
 
 		if( strncmp(line, "#", 1) != 0 ) {
+			//save parameter in struct
 			write_parameter(line, s);
 		}
 
 	}
-
+	//close file
 	fclose(conf);
 	return s;
 }

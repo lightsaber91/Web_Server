@@ -8,6 +8,7 @@
 #include "../src/wurfl_caching.c"
 #include "../src/quality_caching.c"
 
+//Defining error that should be sent
 #define PAG_400 "<html><head>\n<title>400 Bad Request</title>\n</head><body>\n<h1>Bad Request</h1>\n<p>Your browser sent a request that this server could not understand</p>\n</body></html>\n"
 #define ERR_400 "HTTP/1.1 400 Bad Request\nConnection: close\nContent-Type: text/html\n\n"
 #define PAG_404 "<html><head>\n<title>404 Not Found</title>\n</head><body>\n<h1>Not Found</h1>\n<p>The requested URL was not found on this server</p>\n</body></html>\n"
@@ -19,26 +20,16 @@
 #define PAG_505 "<html><head>\n<title>505 Http Version Not Supported</title>\n</head><body>\n<h1>Http Version Not Supported</h1>\n</body></html>\n"
 #define ERR_505 "HTTP/1.1 505 Http Version Not Supported\nConnection: close\nContent-Type: text/html\n\n"
 
-#define BUF_SIZE_0 512
-#define BUF_SIZE_1 1024
-#define BUF_SIZE_2 2048
-#define BUF_SIZE_3 4096
-#define BUF_SIZE_4 8192
-#define BUF_SIZE_5 16384
-#define BUF_SIZE_6 32768
+//Defining different buffer size for sending file
+#define BUF_SIZE_0 1024
+#define BUF_SIZE_1 4096
+#define BUF_SIZE_2 16384
+#define BUF_SIZE_3 32768
+#define BUF_SIZE_4 65536
 
-
-
-//Struct used for type file
-struct extn{
-	char *ext;
-	char *mediatype;
-};
-struct extn *extensions;
 
 //Verify if file is supported from server
 char *supported_type(char *file);
-
 
 //Error Type:
 void error_400(int sockfd);

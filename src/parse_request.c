@@ -1,7 +1,13 @@
 #include "../lib/parse_request.h"
 
+/**
+ * Obtain quality factor for jpg image from the browser request.
+ */
 int get_quality_factor(char *accept_type) {
 
+	//The  strstr(const char *haystack, const char *needle) function 
+	//finds the first occurrence of the substring needle in the 
+	//string haystack.
 	char *search = strstr(accept_type, "image/jpg");
 	if(search != NULL) {
 		double quality;
@@ -11,20 +17,25 @@ int get_quality_factor(char *accept_type) {
 	}
 	else {
 		search = strstr(accept_type, "image");
-		double quality;
-		strtok(search, "=");
-		quality = atof(strtok(NULL,"\n"))*100;
-		return (int)quality;
+		if(search != NULL) {
+			double quality;
+			strtok(search, "=");
+			quality = atof(strtok(NULL,"\n"))*100;
+			return (int)quality;
+		}
+		else {
+			search = strstr(accept_type, "*/*");
+			double quality;
+			strtok(search, "=");
+			quality = atof(strtok(NULL,"\n"))*100;
+			return (int)quality;
+		}
 	}
-	else {
-		search = strstr(accept_type, "*/*");
-		double quality;
-		strtok(search, "=");
-		quality = atof(strtok(NULL,"\n"))*100;
-		return (int)quality;
-	}	
-} 
+}
 
+/**
+ * Parse single line from browser request and save the correct info in the correct variable of our struct
+ */
 void parse_request(char *line, struct browser_request *request) {
 
         if(strncmp(line, "User-Agent: ", 12) == 0) {
@@ -45,6 +56,10 @@ void parse_request(char *line, struct browser_request *request) {
         }
 }
 
+/**
+ * For first line is used a different function, because in first line of HTTP request
+ * there is three different parameters we need to save.
+ */
 void parse_first_line(char *line, struct browser_request *request) {
 
 	request->method = strtok(line, " ");
@@ -53,6 +68,9 @@ void parse_first_line(char *line, struct browser_request *request) {
 
 }
 
+/**
+ * Allocate memory for a struct. In this struct will be saved every field needed for connections and responses.
+ */
 struct browser_request *parse_browser_request(char *message) {
 	
 	struct browser_request *request;

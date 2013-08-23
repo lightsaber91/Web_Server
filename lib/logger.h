@@ -11,4 +11,6 @@
 
 FILE *openLogFile(char *path);
 
-void writeConnectionLog(FILE *log, struct browser_request *request);
+void writeConnectionLog(FILE *log, struct browser_request *request); 
+
+void writeErrorLog(char *error, struct browser_request *request, FILE *log);

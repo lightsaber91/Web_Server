@@ -18,14 +18,13 @@
 #include <signal.h>
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
+#include "shutdown.h"
 #include "../src/config.c"
 #include "../src/parse_request.c"
 #include "../src/logger.c"
-#include "../src/responses.c"
-#include "../src/shutdown.c"
 #include "../src/mime_type.c"
+#include "../src/responses.c"
 
-#define PEND_CONNECTION 100
 #define REQ_SIZE 1024
 
 //Socket Stuff
@@ -36,10 +35,11 @@ struct timeval timeout;
 
 //Configuration stuff
 struct server_setting *setting;
+int max_conn = 250;
+int conn = 0;
 
 //Log File Stuff
 FILE *LogFile;
-//int nthread = 0;
 
 void create_and_bind();
 
@@ -50,8 +50,5 @@ int read_request(int sockfd, char *buf, bool req);
 void ConfigKeepAliveTimeout(int sockfd, int KeepAliveTimeout);
 
 void config_socket(int sockfd, bool KeepAlive);
-
-//extern struct extn;
-//extern struct extn *extensions;
 
 #include "../src/thread.c"
