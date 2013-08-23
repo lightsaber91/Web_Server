@@ -1,0 +1,45 @@
+#! /bin/sh
+
+if [ $# -eq 0 ] 
+then
+	echo Usage: $0 [start\|restart\|stop\|clear]
+	echo
+	echo start: makes the server run
+	echo restart: first stop the server then runs it again
+	echo stop: shutdown the server
+	echo clear: clear web server cache, root directory must be specified
+else
+	if [ X"start" = X$1 ]; 
+	then 
+		echo Launching the server ...
+		server &
+		echo Done!
+	fi
+	if [ X"restart" = X$1 ]
+	then 
+		echo Stopping the server ...
+		killall server
+		echo Done!
+		echo Launching the server ...
+		server &
+		echo Done!		
+	fi
+	if [ X"stop" = X$1 ]
+	then
+		echo Stopping the server ...
+		killall server
+		echo Done!
+	fi
+	if [ X"clear" = X$1 ]
+	then
+		if [ $# != 2 ]
+		then
+			echo "Server Root MUST be specified"
+		else
+			echo Clearing Cahce ...
+			sudo rm -rf -v $2/CACHE/*
+			echo Done!
+		fi
+	fi
+fi
+exit
