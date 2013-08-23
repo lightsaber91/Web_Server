@@ -12,7 +12,7 @@ else
 	if [ X"start" = X$1 ]; 
 	then 
 		echo Launching the server ...
-		server &
+		/opt/tvs/server &
 		echo Done!
 	fi
 	if [ X"restart" = X$1 ]
@@ -21,7 +21,7 @@ else
 		killall server
 		echo Done!
 		echo Launching the server ...
-		server &
+		/opt/tvs/server &
 		echo Done!		
 	fi
 	if [ X"stop" = X$1 ]

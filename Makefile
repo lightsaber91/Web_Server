@@ -16,10 +16,10 @@ clean:
 
 install:
 	sudo mkdir $(PREFIX)
-	sudo cp -v -t $(PREFIX) server.conf wurfl.xml mime.types
-	sudo cp -v -t $(BIN) $(PROGS) server-ctl
+	sudo cp -v -t $(PREFIX) server.conf wurfl.xml mime.types $(PROGS)
+	sudo cp -v -t $(BIN) server-ctl
 
 unistall:
 	sudo rm -v -rf $(PREFIX)*
 	sudo rmdir -v $(PREFIX)
-	sudo rm -v $(BIN)/server-ctl $(BIN)/server
+	sudo rm -v $(BIN)/server-ctl 
