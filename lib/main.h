@@ -19,7 +19,7 @@
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
 #include <pthread.h>
-#include "shutdown.h"
+
 #define REQ_SIZE 1024
 
 //Socket Stuff
@@ -35,18 +35,11 @@ FILE *LogFile;
 
 #include "../src/config.c"
 #include "../src/parse_request.c"
+#include "shutdown.h"
+#include "util.h"
+#include "socket.h"
 #include "../src/logger.c"
 #include "../src/mime_type.c"
 #include "../src/responses.c"
-
-int create_and_bind(struct sockaddr_in skaddr, socklen_t socksize);
-
-char *concatenation (struct browser_request *request, struct server_setting *setting);
-
-int read_request(int sockfd, char *buf, bool req);
-
-void ConfigKeepAliveTimeout(int sockfd, int KeepAliveTimeout);
-
-void config_socket(int sockfd, bool KeepAlive);
-
+#include "../src/read.c"
 #include "../src/thread.c"
