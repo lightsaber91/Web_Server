@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/mman.h>
 #include "../src/parser.c"
 #include "../src/resize.c"
 #include "../src/wurfl_caching.c"
@@ -21,12 +22,13 @@
 #define ERR_505 "HTTP/1.1 505 Http Version Not Supported\nConnection: close\nContent-Type: text/html\n\n"
 
 //Defining different buffer size for sending file
-#define BUF_SIZE_0 1024
-#define BUF_SIZE_1 4096
-#define BUF_SIZE_2 16384
-#define BUF_SIZE_3 32768
-#define BUF_SIZE_4 65536
-
+#define BUF_SIZE_0 256
+#define BUF_SIZE_1 512
+#define BUF_SIZE_2 1024
+#define BUF_SIZE_3 2048
+#define BUF_SIZE_4 4096
+#define BUF_SIZE_5 8192
+#define BUF_SIZE_6 16384
 
 //Verify if file is supported from server
 char *supported_type(char *file);
@@ -39,9 +41,9 @@ void error_415(int sockfd);
 void error_505(int sockfd);
 
 //Send header, file, image
-void send_header(int sockfd, char *file);
-void send_file(int sockfd, char *file, char *ext);
-void send_image(struct server_setting *s, int sockfd, char *file, char *ext, char *user_agent, int quality);
+void send_header(int sockfd, char *file, char *ext);
+int send_file(int sockfd, char *file, char *ext);
+int send_image(struct server_setting *s, int sockfd, char *file, char *ext, char *user_agent, int quality);
 
 //Generic answer
-int respond(struct server_setting *s, int sockfd, struct browser_request *request, bool toLog, FILE *logFile);
+int respond(struct server_setting *s, int sockfd, struct browser_request *request, bool toLog, FILE *logFilezz, char *path_to_file);

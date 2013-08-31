@@ -65,16 +65,14 @@ void parse_first_line(char *line, struct browser_request *request) {
 	request->method = strtok(line, " ");
 	request->file_requested = strtok(NULL, " ");
 	request->http_version = strtok(NULL, "\n\r");
-
 }
 
 /**
  * Allocate memory for a struct. In this struct will be saved every field needed for connections and responses.
  */
 struct browser_request *parse_browser_request(char *message) {
-	
-	struct browser_request *request;
 
+	struct browser_request *request;
 	request = malloc(sizeof(struct browser_request));
 	if(request == NULL) {
 		perror("Memory Allocation Failure");

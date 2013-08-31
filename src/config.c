@@ -104,6 +104,11 @@ void write_parameter(char *line, struct server_setting *s) {
 		strtok(line, "=");
 		s->pend_connection = atol(strtok(NULL, ";"));
 	}
+	else if( strncmp(line, "MAX_THREAD=", 11) == 0) {
+
+		strtok(line, "=");
+		max_thread = atoi(strtok(NULL, ";"));
+	}
 }
 /**
  * Create a struct for server file configuration parameters.

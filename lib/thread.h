@@ -1,4 +1,4 @@
-#include <pthread.h>
+pthread_mutex_t clisd_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 struct thread_job {
 	pthread_t tid;

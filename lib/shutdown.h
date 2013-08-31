@@ -11,6 +11,15 @@ void shutdown_routine() {
 void sigterm_handler(int sig)
 {
 	if(sig == SIGTERM)
-		printf("Shutting Down the Server\n");
+		printf("\nShutting Down the Server\n");
+	shutdown_routine();
+}
+/**
+ * Handler for SIGINT signal, launch shutdown routine.
+ */
+void sigint_handler(int sig)
+{
+	if(sig == SIGINT)
+		printf("\nShutting Down the Server\n");
 	shutdown_routine();
 }

@@ -51,19 +51,25 @@ void *manage_connection(void *p){
 			break; 
 		}
 		job->maxKeepAliveReq--;
+
 		struct browser_request *request;
+		pthread_mutex_lock(&clisd_mutex);
 		request = parse_browser_request(in_request);
+		pthread_mutex_unlock(&clisd_mutex);
 		if(request == NULL) {
 			break;
 		}
-
-		concatenation(request, job->s);
+		//real location of resource requested from client in the server memory
+		char *path_to_file = concatenation(request, job->s);
 
 		if(job->s->log_lvl > 0) {
+			pthread_mutex_lock(&clisd_mutex);
 			writeConnectionLog(LogFile, request);
+			pthread_mutex_unlock(&clisd_mutex);
 		}
-
-		if(respond(job->s, job->socket, request, job->toLog, job->LogFile) == -1) {
+		if(respond(job->s, job->socket, request, job->toLog, job->LogFile, path_to_file) == -1) {
+			free(request);
+			free(in_request);
 			break;
 		}
 		free(request);
@@ -74,7 +80,9 @@ void *manage_connection(void *p){
 		ConfigKeepAliveTimeout(job->socket, job->s->KeepAliveTimeout);
 		firstReq = false;
 	}
-	conn--;
+	//pthread_mutex_lock(&clisd_mutex);
+	n_thread--;
+	//pthread_mutex_unlock(&clisd_mutex);
 	if(close(job->socket) == -1) {
 		perror("Closing Socket\n");
 	}

@@ -11,6 +11,9 @@ BIN=/usr/bin/
 all:
 	$(CC) $(CFLAGS) $(WANDFLAG) $(CFILES) $(WANDCONFIG) $(XMLFLAG) -o $(PROGS) -pthread
 
+debug:
+	$(CC) $(CFLAGS) $(WANDFLAG) -g $(CFILES) $(WANDCONFIG) $(XMLFLAG) -o $(PROGS) -pthread
+
 clean:
 	rm -f $(PROGS) *.o
 

@@ -6,10 +6,18 @@
  * Create connections and launch threads to manage these. 
  */
 int main() {
-	//Initiate signal handler for sigterm
+	printf("Starting server...\n");
+	//Socket Stuff
+	int skt_lst, skt_accpt;
+	struct sockaddr_in skaddr;
+	socklen_t socksize;
+
+	//Initiate signal handler for sigterm & sigint
 	signal(SIGTERM, sigterm_handler);
+	signal(SIGINT, sigint_handler);
 	//Read conf file and save parameters
 	setting = parse_config_file();
+
 	//Load mime types from file
 	extensions = load_mime_type(setting->mime_type_file);
 
@@ -34,12 +42,11 @@ int main() {
 		}
 	}
 	//Create socket
-	create_and_bind();
-
+	skt_lst = create_and_bind(skaddr, socksize);
+	printf("Server started successfully!\n");
 	for(;;) {
-		if(conn < max_conn) {
+		if(max_thread == 0 || n_thread < max_thread) {
 			//Take connection and launch thread to manage it
-			conn++;
 			if(listen(skt_lst, setting->pend_connection) == -1) {
 				perror("Socket Listening Error\n");
 				return(EXIT_FAILURE);
@@ -49,10 +56,13 @@ int main() {
 				perror("Socket Accepting Error\n");
 				return(EXIT_FAILURE);
 			}
+			n_thread++;
 			create_thread(setting, skt_accpt, toLog, LogFile);
 		}
 		else {
-			sleep(1);
+			again:
+				usleep(1);
+				if(n_thread >= max_thread) goto again;
 		}
 	}
 	//Close socket and exit
@@ -134,7 +144,7 @@ int read_request(int sockfd, char *buf, bool req) {
  * Merge page request from browser and browser's root folder
  * to obtain correct path of phisical file in the server
  */
-void concatenation (struct browser_request *request, struct server_setting *setting) {
+char *concatenation (struct browser_request *request, struct server_setting *setting) {
 
 	if(strcmp(request->file_requested, "/") == 0) {
 		char *rootFile = malloc(strlen(setting->root_folder)+strlen(setting->home_page)+1);
@@ -144,7 +154,7 @@ void concatenation (struct browser_request *request, struct server_setting *sett
 		if(sprintf(rootFile, "%s%s", setting->root_folder, setting->home_page) < 0) {
 			perror("In sprintf: nothing written\n");
 		}
-		request->file_requested = rootFile;
+		return rootFile;
 	}
 	else {
 		char *rootFile = malloc(strlen(setting->root_folder)+strlen(request->file_requested)+1);
@@ -154,7 +164,7 @@ void concatenation (struct browser_request *request, struct server_setting *sett
 		if(sprintf(rootFile, "%s%s", setting->root_folder, request->file_requested) < 0) {
 			perror("In sprintf: nothing written\n");
 		}
-		request->file_requested = rootFile;
+		return rootFile;
 	}
 
 }
@@ -162,9 +172,9 @@ void concatenation (struct browser_request *request, struct server_setting *sett
 /**
  * Create socket and permform bind
  */
-void create_and_bind() {
+int create_and_bind(struct sockaddr_in skaddr, socklen_t socksize) {
 	int reuse = 1;
-	skt_lst = socket(AF_INET,SOCK_STREAM,0);
+	int skt_lst = socket(AF_INET,SOCK_STREAM,0);
 	if(skt_lst == -1) {
                 perror("In socket initialization\n");
                 exit(EXIT_FAILURE);
@@ -187,4 +197,5 @@ void create_and_bind() {
 		perror("IP or Port Addresses probably in Use\n");
 		exit(EXIT_FAILURE);
 	}
+	return skt_lst;
 }

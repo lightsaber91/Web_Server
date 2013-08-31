@@ -3,17 +3,21 @@
 /**
  * According to file length ,choose dimension of send buffer.
  */
-int choose_buf_size(unsigned long long len) {
-	if(len/BUF_SIZE_0 < 5)
+int choose_buf_size(off_t len) {
+	if(len/BUF_SIZE_0 < 2)
 		return BUF_SIZE_0;
-	if(len/BUF_SIZE_1 < 5)
+	if(len/BUF_SIZE_1 < 2)
 		return BUF_SIZE_1;
-	if(len/BUF_SIZE_2 < 5)
+	if(len/BUF_SIZE_2 < 2)
 		return BUF_SIZE_2;
-	if(len/BUF_SIZE_3 < 5)
+	if(len/BUF_SIZE_3 < 2)
 		return BUF_SIZE_3;
-	else
+	if(len/BUF_SIZE_4 < 2)
 		return BUF_SIZE_4;
+	if(len/BUF_SIZE_5 < 2)
+		return BUF_SIZE_5;
+	else
+		return BUF_SIZE_6;
 }
 
 /**
@@ -22,12 +26,12 @@ int choose_buf_size(unsigned long long len) {
 void error_505(int sockfd) {
 
 	if(send(sockfd, ERR_505, strlen(ERR_505), MSG_NOSIGNAL) < 0) {
-		perror("Sending Packet\n");
+		perror("Sending Packet header err 505");
 		return;
 	}
 
 	if(send(sockfd, PAG_505, strlen(PAG_505), MSG_NOSIGNAL) < 0) {
-		perror("Sending Packet\n");
+		perror("Sending Packet page err 505");
 		return;
 	}
 }
@@ -38,12 +42,12 @@ void error_505(int sockfd) {
 void error_400(int sockfd) {
 
 	if(send(sockfd, ERR_400, strlen(ERR_400), MSG_NOSIGNAL) < 0) {
-		perror("Sending Packet\n");
+		perror("Sending Packet header err 400");
 		return;
 	}
 
 	if(send(sockfd, PAG_400, strlen(PAG_400), MSG_NOSIGNAL) < 0) {
-		perror("Sending Packet\n");
+		perror("Sending Packet page err 400");
 		return;
 	}
 	close(sockfd);
@@ -55,12 +59,12 @@ void error_400(int sockfd) {
 void error_408(int sockfd) {
 
 	if(send(sockfd, ERR_408, strlen(ERR_408), MSG_NOSIGNAL) < 0) {
-		perror("Sending Packet\n");
+		perror("Sending Packet header err 408");
 		return;
 	}
 
 	if(send(sockfd, PAG_408, strlen(PAG_408), MSG_NOSIGNAL) < 0) {
-		perror("Sending Packet\n");
+		perror("Sending Packet page err 408");
 		return;
 	}
 }
@@ -71,11 +75,11 @@ void error_408(int sockfd) {
 void error_404(int sockfd) {
 
 	if(send(sockfd, ERR_404, strlen(ERR_404), MSG_NOSIGNAL) < 0) {
-		perror("Sending Packet\n");
+		perror("Sending Packet header err 404");
 		return;
 	}
 	if(send(sockfd, PAG_404, strlen(PAG_404), MSG_NOSIGNAL) < 0 ) {
-		perror("Sending Packet\n");
+		perror("Sending Packet page err 404");
 		return;
 	}
 }
@@ -86,11 +90,11 @@ void error_404(int sockfd) {
 void error_415(int sockfd) {
 
 	if(send(sockfd, ERR_415, strlen(ERR_415), MSG_NOSIGNAL) < 0) {
-		perror("Sending Packet\n");
+		perror("Sending Packet header err 415");
 		return;
 	}
 	if(send(sockfd, PAG_415, strlen(PAG_415), MSG_NOSIGNAL) < 0 ) {
-		perror("Sending Packet\n");
+		perror("Sending Packet page err 415");
 		return;
 	}
 }
@@ -98,28 +102,23 @@ void error_415(int sockfd) {
 /**
  * Send HTTP header of file.
  */
-void send_header(int sockfd, char *file) {
+void send_header(int sockfd, char *file, char *ext) {
 	int fd = open(file, O_RDONLY, S_IREAD | S_IWRITE);
 	if(fd == -1){
 		perror("Opening File Requested\n");
 		return;
 	}
-	unsigned long long lenfile = (unsigned long long)lseek(fd, (off_t)0, SEEK_END);
-	if(lenfile == (unsigned long long)-1){
-		perror("In lseek\n");
-		return;
-	}
-	if(lseek(fd, (off_t)0, SEEK_SET) == -1) {
-		perror("In lseek\n");
-		return;
-	}
+	struct stat s;
+	fstat(fd, &s);
 	char header[BUF_SIZE_0];
-	if(sprintf(header,"HTTP/1.1 200 OK\nContent-Length: %lld\nConnection: close\nContent-Type: text/html\n\n",lenfile) < 0) {
+	if(sprintf(header,"HTTP/1.1 200 OK\nContent-Length: %lu\nConnection: close\nContent-Type: %s\n\n", s.st_size, ext) < 0) {
 		perror("In sprintf: nothing written\n");
+		close(fd);
 		return;
 	}
 	if(send(sockfd, header, strlen(header), MSG_NOSIGNAL) == -1) {
-		perror("Sending Packet\n");
+		perror("Sending Packet header in HEAD");
+		close(fd);
 		return;
 	}
 	close(fd);
@@ -128,69 +127,65 @@ void send_header(int sockfd, char *file) {
 /**
  * General function that send every file supported by the server.
  */
-void send_file(int sockfd, char *file, char *ext) {
+int send_file(int sockfd, char *file, char *ext) {
 	int fd = open(file, O_RDONLY, S_IREAD | S_IWRITE);
 	if(fd == -1){
 		perror("Opening File Requested\n");
-		return;
+		return -1;
 	}
-	unsigned long long lenfile;
-	lenfile = (unsigned long long)lseek(fd, (off_t)0, SEEK_END);
-	if(lenfile == (unsigned long long) -1){
-		perror("In lseek\n");
-		return;
-	}
-	if(lseek(fd, (off_t)0, SEEK_SET) == -1) {
-		perror("In lseek\n");
-		return;
-	}
+	struct stat s;
+	fstat(fd, &s);
 	int ret = 0;
-	int size = choose_buf_size(lenfile);
+	int size = choose_buf_size(s.st_size);
 	char header[size];
-	if(sprintf(header,"HTTP/1.1 200 OK\nContent-Length: %lld\nConnection: Keep-Alive\nContent-Type: %s\n\n", lenfile, ext) < 0) {
+	if(sprintf(header,"HTTP/1.1 200 OK\nContent-Length: %lu\nConnection: Keep-Alive\nContent-Type: %s\n\n", s.st_size, ext) < 0) {
 		perror("In sprintf: nothing written\n");
-		return;
+		close(fd);
+		return -1;
 	}
 	if(send(sockfd, header, strlen(header), MSG_NOSIGNAL) == -1) {
-		perror("Sending Packet\n");
-		return;
+		perror("Sending Packet Header");
+		close(fd);
+		return -1;
 	}
 	while ((ret = read(fd, header, size)) > 0 ){
-		if(send(sockfd, header, ret, MSG_NOSIGNAL /*| MSG_MORE*/) == -1) {
-			perror("Sending Packet\n");
+		if(send(sockfd, header, ret, MSG_NOSIGNAL) == -1) {
+			perror("Sending Packet");
 			close(fd);
-			return;
+			return -1;
 		}
 	}
 	close(fd);
+	return 0;
 }
 
 /**
  * This function resize image if enabled in setting, than call send_file function,
  * otherwise call send_file on image without resizing it.
  */
-void send_image(struct server_setting *s, int sockfd, char *file, char *ext, char *user_agent, int quality) {
+int send_image(struct server_setting *s, int sockfd, char *file, char *ext, char *user_agent, int quality) {
 
 	if(s->use_wurfl == true) {
 		struct device_property *property = malloc(sizeof(struct device_property));
 		if(property != NULL) { 
 			if(parse_UA(user_agent, property, s->start) == 0) {
 				char *file_resized = cache_by_resolution(property->resolution_width, property->resolution_height, file);
-				send_file(sockfd, file_resized, ext);
+				return send_file(sockfd, file_resized, ext);
 			}
 			else {
 				char *lowq_file = cache_by_quality(file, quality); 
-				send_file(sockfd, lowq_file, ext);
+				return send_file(sockfd, lowq_file, ext);
 			}
 		}
 		else {
 			char *lowq_file = cache_by_quality(file, quality); 
-			send_file(sockfd, lowq_file, ext);
+			return send_file(sockfd, lowq_file, ext);
 		}
 	}
 	else { 
-		send_file(sockfd, file, ext);
+		return send_file(sockfd, file, ext);
 	}
+	return -1;
 }
 
 /**
@@ -198,8 +193,7 @@ void send_image(struct server_setting *s, int sockfd, char *file, char *ext, cha
  * in case of HEADER request send only the header and in case of GET send the file.
  * If error occurs writes in the log file. 
  */
-int respond(struct server_setting *s, int sockfd, struct browser_request *request, bool toLog, FILE *logFile) {
-
+int respond(struct server_setting *s, int sockfd, struct browser_request *request, bool toLog, FILE *logFile, char *path_to_file) {
 
 	if(strcasecmp(request->http_version, "HTTP/1.0") != 0 && strcasecmp(request->http_version, "HTTP/1.1") != 0) {
 		error_505(sockfd);
@@ -218,7 +212,7 @@ int respond(struct server_setting *s, int sockfd, struct browser_request *reques
 	}
 
 	else {
-		char *extension = supported_type(request->file_requested);
+		char *extension = supported_type(path_to_file);
 
 		if(extension == NULL) {
 			error_415(sockfd);
@@ -228,7 +222,7 @@ int respond(struct server_setting *s, int sockfd, struct browser_request *reques
 			return -1;
 		}
 
-		else if(access(request->file_requested, R_OK) == -1) {
+		else if(access(path_to_file, F_OK) == -1) {
 			error_404(sockfd);
 			if(toLog) {
 				writeErrorLog("404 File Not Found", request, logFile);
@@ -236,19 +230,18 @@ int respond(struct server_setting *s, int sockfd, struct browser_request *reques
 			return 0;
 		}
 
-		else if(strcmp(request->method, "HEAD") == 0 || strcmp(request->method, "head") == 0) {
-			send_header(sockfd, request->file_requested);
-			return 0;
+		else if(strcasecmp(request->method, "HEAD") == 0) {
+			send_header(sockfd, path_to_file, extension);
+			return -1;
 		}
 
 		else {
 			if(strncmp(extension, "image", 5) == 0) {
-				send_image(s, sockfd, request->file_requested, extension, request->user_agent, request->accept_quality);
+				return send_image(s, sockfd, path_to_file, extension, request->user_agent, request->accept_quality);
 			}
 			else 
-				send_file(sockfd, request->file_requested, extension);
-			return 0;
-		}
+				return send_file(sockfd, path_to_file, extension);
+			}
 	}
 	return -1;
 }
