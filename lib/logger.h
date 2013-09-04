@@ -11,6 +11,8 @@
 
 FILE *openLogFile(char *path);
 
-void writeConnectionLog(FILE *log, struct browser_request *request); 
+char *get_time_and_date();
 
-void writeErrorLog(char *error, struct browser_request *request, FILE *log);
+void writeConnectionLog(HTTP_CONN *request); 
+
+void writeInfoLog(char *error, HTTP_CONN *request);

@@ -6,7 +6,7 @@
 /**
  * Definition of server setting and every parameter
  */
-struct server_setting {
+typedef struct server_setting {
 	char *ip;
 	char *root_folder;
 	char *home_page;
@@ -14,7 +14,6 @@ struct server_setting {
 	char *wurfl_location;
 	char *mime_type_file;
 	int port;
-	int log_lvl;
 	int timeout;
 	int MaxKeepAliveReq;
 	int KeepAliveTimeout;
@@ -24,5 +23,5 @@ struct server_setting {
 	long pend_connection;
 	xmlDoc *doc;
 	xmlNode *start;
-};
+} SETTING;
 

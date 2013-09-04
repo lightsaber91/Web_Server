@@ -2,7 +2,7 @@
  * Merge page request from browser and browser's root folder
  * to obtain correct path of phisical file in the server
  */
-char *concatenation (struct browser_request *request, struct server_setting *setting) {
+char *concatenation (HTTP_CONN *request, SETTING *setting) {
 
 	if(strcmp(request->file_requested, "/") == 0) {
 		char *rootFile = malloc(strlen(setting->root_folder)+strlen(setting->home_page)+1);

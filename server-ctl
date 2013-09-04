@@ -7,7 +7,7 @@ then
 	echo start: makes the server run
 	echo restart: first stop the server then runs it again
 	echo stop: shutdown the server
-	echo clear: clear web server cache, root directory must be specified
+	echo clear: clear web server cache, server\'s root directory must be specified
 else
 	if [ X"start" = X$1 ]; 
 	then 
@@ -34,7 +34,7 @@ else
 	then
 		if [ $# != 2 ]
 		then
-			echo "Server Root MUST be specified"
+			echo "Server's Root MUST be specified"
 		else
 			echo Clearing Cahce ...
 			sudo rm -rf -v $2/CACHE/*

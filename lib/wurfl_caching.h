@@ -6,5 +6,5 @@
 #include <sys/stat.h>
 #include <errno.h>
 
-#define CACHE "cache/"
+#define CACHE "/CACHE/"
 #define MAX_DIM_RES "9999x9999/"

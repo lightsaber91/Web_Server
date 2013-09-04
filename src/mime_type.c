@@ -3,7 +3,7 @@
 /**
  * Read extension and type from file and save in memory.
  */
-void save_mime(char *line, struct extn *t, int n) {
+void save_mime(char *line, MIME *t, int n) {
 	if(line == NULL) {
 		t[n].ext = (char *)0;
 		t[n].mediatype = (char *)0;
@@ -16,7 +16,7 @@ void save_mime(char *line, struct extn *t, int n) {
 /**
  * Load mime type from file to an array of struct.
  */
-struct extn *load_mime_type(char *file) {
+MIME *load_mime_type(char *file) {
 	//Open File
 	FILE *mime = fopen(file, "r");
 	if(mime == NULL) {
@@ -24,7 +24,7 @@ struct extn *load_mime_type(char *file) {
 		exit(EXIT_FAILURE);
 	}
 	//Create struct
-	struct extn *types = malloc(sizeof(struct extn));
+	MIME *types = malloc(sizeof(MIME));
 	if(types == NULL) {
 		perror("Memory Allocation Failure\n");
 		exit(EXIT_FAILURE);
@@ -46,7 +46,7 @@ struct extn *load_mime_type(char *file) {
 		if( strncmp(line, "#", 1) != 0 ) {
 			save_mime(line, types, N_line-1);
 			N_line++;
-			types = realloc(types, N_line*sizeof(struct extn));	
+			types = realloc(types, N_line*sizeof(MIME));	
 		}
 		
 	}

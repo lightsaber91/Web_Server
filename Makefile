@@ -21,6 +21,7 @@ install:
 	sudo mkdir $(PREFIX)
 	sudo cp -v -t $(PREFIX) server.conf wurfl.xml mime.types $(PROGS)
 	sudo cp -v -t $(BIN) server-ctl
+	sudo chmod +x $(BIN)/server-ctl
 
 unistall:
 	sudo rm -v -rf $(PREFIX)*

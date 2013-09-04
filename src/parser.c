@@ -16,6 +16,8 @@ xmlDoc *initDoc(char *wurfl_location) {
 		return doc;
 	}
         perror("Wurfl XML repository not found at path specified by user. Image processing will be disabled.\n");
+	if(toLog > 0)
+		writeInfoLog(WURFL_NOT_FOUND, NULL);
 	return NULL;
 }
 
@@ -44,7 +46,7 @@ xmlNode *getDevicesNode(xmlDoc *doc) {
 /**
  * Verify existence of device in xml file
  */
-int findDeviceNodeByUserAgent(xmlNode *node, char *header_useragent, struct device_property *property) {
+int findDeviceNodeByUserAgent(xmlNode *node, char *header_useragent, DEVICE *property) {
 	xmlNode *cur = node;
 	//start checking every device
 	cur = cur->xmlChildrenNode;
@@ -149,7 +151,7 @@ void getDeviceDimension(xmlNode *node, int *width, int *height) {
 /**
  * General function to searche devices in wurfl and find their properties.
  */ 
-int parse_UA(char *user_agent, struct device_property *property, xmlNode *start) {
+int parse_UA(char *user_agent, DEVICE *property, xmlNode *start) {
 
 	//max_attempts defined in conf file
 	int max_attempts = setting->user_agent_max_attempts;
@@ -165,6 +167,8 @@ int parse_UA(char *user_agent, struct device_property *property, xmlNode *start)
 			getDeviceDimension(property->device, &property->resolution_width, &property->resolution_height);
 			if(property->resolution_width == 0 && property->resolution_height == 0) {
 				perror("Resolution not found in wurfl: resizing disabled.\n");
+				if(toLog > 0)
+					writeInfoLog(RES_NOT_FOUND, NULL);
 				return -1;
 			}
 			return 0;
@@ -172,5 +176,7 @@ int parse_UA(char *user_agent, struct device_property *property, xmlNode *start)
 		reduce_user_agent(user_agent);
 		max_attempts--;
 	}
+	if(toLog > 0)
+		writeInfoLog(UA_NOT_FOUND, NULL);
 	return -1;
 }

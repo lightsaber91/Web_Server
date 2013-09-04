@@ -3,7 +3,7 @@
 /**
  * Compare line read and save data in correct variable.
  */
-void write_parameter(char *line, struct server_setting *s) {
+void write_parameter(char *line, SETTING *s) {
 
 	if ( strncmp(line, "IP=", 3) == 0 ) {
 		strtok(line, "=");
@@ -48,13 +48,13 @@ void write_parameter(char *line, struct server_setting *s) {
 		strtok(line, "=");
 		char *lvl_t = strtok(NULL, "\n");
 		if( strncmp(lvl_t, ";", 1) == 0 || strncmp(lvl_t, "NONE", 4) == 0 ) {
-			s->log_lvl = -1;
+			toLog = -1;
 		}
-		else if( strncmp(lvl_t, "ERROR", 5) == 0 ) {
-			s->log_lvl = 0;
+		else if( strncmp(lvl_t, "INFO;", 5) == 0 ) {
+			toLog = 0;
 		}
 		else if( strncmp(lvl_t, "DEBUG;", 6) == 0 ) {
-			s->log_lvl = 1;
+			toLog = 1;
 		}
 
 	}
@@ -114,9 +114,9 @@ void write_parameter(char *line, struct server_setting *s) {
  * Create a struct for server file configuration parameters.
  * Read parameters from file and save into the struct variables. 
  */
-struct server_setting *parse_config_file() {
+SETTING *parse_config_file() {
 
-	struct server_setting *s = malloc(sizeof(struct server_setting));
+	SETTING *s = malloc(sizeof(SETTING));
 	if(s == NULL) {
 		perror("Memory Allocation Failure\n");
 		exit(EXIT_FAILURE);

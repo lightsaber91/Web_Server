@@ -20,7 +20,7 @@ char *create_new_res_dir(int resolution_width ,int resolution_height) {
 		return NULL;
 	}
 	//name directory for correct image dimension inside CACHE
-	if(sprintf(res_dir,"%scache/%dx%d/", setting->root_folder, resolution_width, resolution_height) < 0) {
+	if(sprintf(res_dir,"%sCACHE/%dx%d/", setting->root_folder, resolution_width, resolution_height) < 0) {
 		perror("In sprintf: nothing written\n");
 		return NULL;
 	}

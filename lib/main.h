@@ -25,20 +25,26 @@
 //Socket Stuff
 struct timeval timeout;
 
-//Configuration stuff
-struct server_setting *setting;
+//Thread Stuff
+pthread_mutex_t clisd_mutex = PTHREAD_MUTEX_INITIALIZER;
 static int max_thread;
 int n_thread = 0;
 
 //Log File Stuff
 FILE *LogFile;
+int toLog = -1;
+#define START "Server started successfully!"
+#define EXIT "Shutting Down the Server..."
 
 #include "../src/config.c"
+//Server Setting
+SETTING *setting;
+
 #include "../src/parse_request.c"
+#include "../src/logger.c"
 #include "shutdown.h"
 #include "util.h"
 #include "socket.h"
-#include "../src/logger.c"
 #include "../src/mime_type.c"
 #include "../src/responses.c"
 #include "../src/read.c"

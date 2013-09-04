@@ -6,7 +6,7 @@
  * Create connections and launch threads to manage these. 
  */
 int main() {
-	printf("Starting server...\n");
+
 	//Socket Stuff
 	int skt_lst, skt_accpt;
 	struct sockaddr_in skaddr;
@@ -21,13 +21,11 @@ int main() {
 	//Load mime types from file
 	extensions = load_mime_type(setting->mime_type_file);
 
-	bool toLog = false;
-	if( setting->log_lvl > -1 ) {
+	if(toLog > -1) {
 		//Open Log File
 		LogFile = openLogFile(setting->log_path);
-		if(LogFile != NULL) 
-			toLog = true;
-		
+		if(LogFile == NULL)
+			toLog = -1;	
 	}
 	if(setting->use_wurfl == true) {
 		//Open wurfl file and build the xml three
@@ -43,7 +41,10 @@ int main() {
 	}
 	//Create socket
 	skt_lst = create_and_bind(skaddr, socksize);
-	printf("Server started successfully!\n");
+	//Write On Log File when server started
+	if(toLog > -1)
+		writeInfoLog(START, NULL);
+
 	for(;;) {
 		if(max_thread == 0 || n_thread < max_thread) {
 			//Take connection and launch thread to manage it
@@ -57,7 +58,7 @@ int main() {
 				return(EXIT_FAILURE);
 			}
 			n_thread++;
-			create_thread(setting, skt_accpt, toLog, LogFile);
+			create_thread(setting, skt_accpt);
 		}
 		else {
 			again:

@@ -21,6 +21,13 @@
 #define PAG_505 "<html><head>\n<title>505 Http Version Not Supported</title>\n</head><body>\n<h1>Http Version Not Supported</h1>\n</body></html>\n"
 #define ERR_505 "HTTP/1.1 505 Http Version Not Supported\nConnection: close\nContent-Type: text/html\n\n"
 
+//Define Errors for log file
+#define LOG_400 "Error: 400 Bad Request"
+#define LOG_404 "Error: 404 File Not Found"
+#define LOG_408 "Error: 408 Request time-out"
+#define LOG_415 "Error: 415 Unsupported Media Type"
+#define LOG_505 "Error: 505 Http Version Not Supported"
+
 //Defining different buffer size for sending file
 #define BUF_SIZE_0 256
 #define BUF_SIZE_1 512
@@ -43,7 +50,7 @@ void error_505(int sockfd);
 //Send header, file, image
 void send_header(int sockfd, char *file, char *ext);
 int send_file(int sockfd, char *file, char *ext);
-int send_image(struct server_setting *s, int sockfd, char *file, char *ext, char *user_agent, int quality);
+int send_image(SETTING *s, int sockfd, char *file, char *ext, char *user_agent, int quality);
 
 //Generic answer
-int respond(struct server_setting *s, int sockfd, struct browser_request *request, bool toLog, FILE *logFilezz, char *path_to_file);
+int respond(SETTING *s, int sockfd, HTTP_CONN *request, char *path_to_file);

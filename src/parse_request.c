@@ -16,27 +16,14 @@ int get_quality_factor(char *accept_type) {
 		return (int)quality;
 	}
 	else {
-		search = strstr(accept_type, "image");
-		if(search != NULL) {
-			double quality;
-			strtok(search, "=");
-			quality = atof(strtok(NULL,"\n"))*100;
-			return (int)quality;
-		}
-		else {
-			search = strstr(accept_type, "*/*");
-			double quality;
-			strtok(search, "=");
-			quality = atof(strtok(NULL,"\n"))*100;
-			return (int)quality;
-		}
+		return 100;
 	}
 }
 
 /**
  * Parse single line from browser request and save the correct info in the correct variable of our struct
  */
-void parse_request(char *line, struct browser_request *request) {
+void parse_request(char *line, HTTP_CONN *request) {
 
         if(strncmp(line, "User-Agent: ", 12) == 0) {
                 strtok(line, " ");
@@ -60,7 +47,7 @@ void parse_request(char *line, struct browser_request *request) {
  * For first line is used a different function, because in first line of HTTP request
  * there is three different parameters we need to save.
  */
-void parse_first_line(char *line, struct browser_request *request) {
+void parse_first_line(char *line, HTTP_CONN *request) {
 
 	request->method = strtok(line, " ");
 	request->file_requested = strtok(NULL, " ");
@@ -70,10 +57,10 @@ void parse_first_line(char *line, struct browser_request *request) {
 /**
  * Allocate memory for a struct. In this struct will be saved every field needed for connections and responses.
  */
-struct browser_request *parse_browser_request(char *message) {
+HTTP_CONN *parse_client_request(char *message) {
 
-	struct browser_request *request;
-	request = malloc(sizeof(struct browser_request));
+	HTTP_CONN *request;
+	request = malloc(sizeof(HTTP_CONN));
 	if(request == NULL) {
 		perror("Memory Allocation Failure");
 		return NULL;

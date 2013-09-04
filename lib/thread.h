@@ -1,13 +1,12 @@
-pthread_mutex_t clisd_mutex = PTHREAD_MUTEX_INITIALIZER;
+#define T_CREAT "Thread Created"
+#define T_EXIT "Thread Terminated"
 
-struct thread_job {
+typedef struct thread_job {
 	pthread_t tid;
-	struct server_setting *s;
+	SETTING *s;
 	int socket;
 	int maxKeepAliveReq;
-	bool toLog;
-	FILE *LogFile;
 	xmlNode *start;
-};
+}T_INFO;
 
 void *manage_connection(void *p);

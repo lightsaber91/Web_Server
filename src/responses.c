@@ -59,11 +59,15 @@ void error_400(int sockfd) {
 void error_408(int sockfd) {
 
 	if(send(sockfd, ERR_408, strlen(ERR_408), MSG_NOSIGNAL) < 0) {
+		if(errno == EPIPE)
+			return;
 		perror("Sending Packet header err 408");
 		return;
 	}
 
 	if(send(sockfd, PAG_408, strlen(PAG_408), MSG_NOSIGNAL) < 0) {
+		if(errno == EPIPE)
+			return;
 		perror("Sending Packet page err 408");
 		return;
 	}
@@ -163,10 +167,10 @@ int send_file(int sockfd, char *file, char *ext) {
  * This function resize image if enabled in setting, than call send_file function,
  * otherwise call send_file on image without resizing it.
  */
-int send_image(struct server_setting *s, int sockfd, char *file, char *ext, char *user_agent, int quality) {
+int send_image(SETTING *s, int sockfd, char *file, char *ext, char *user_agent, int quality) {
 
 	if(s->use_wurfl == true) {
-		struct device_property *property = malloc(sizeof(struct device_property));
+		DEVICE *property = malloc(sizeof(DEVICE));
 		if(property != NULL) { 
 			if(parse_UA(user_agent, property, s->start) == 0) {
 				char *file_resized = cache_by_resolution(property->resolution_width, property->resolution_height, file);
@@ -193,20 +197,20 @@ int send_image(struct server_setting *s, int sockfd, char *file, char *ext, char
  * in case of HEADER request send only the header and in case of GET send the file.
  * If error occurs writes in the log file. 
  */
-int respond(struct server_setting *s, int sockfd, struct browser_request *request, bool toLog, FILE *logFile, char *path_to_file) {
+int respond(SETTING *s, int sockfd, HTTP_CONN *request, char *path_to_file) {
 
 	if(strcasecmp(request->http_version, "HTTP/1.0") != 0 && strcasecmp(request->http_version, "HTTP/1.1") != 0) {
 		error_505(sockfd);
-		if(toLog) {
-			writeErrorLog("505 Http Version Not Supported", request, logFile);
+		if(toLog > 0) {
+			writeInfoLog(LOG_505, NULL);
 		}
 		return -1;
 	}
 
 	else if(strcasecmp(request->method, "GET") != 0 && strcasecmp(request->method, "HEAD") != 0) {
 		error_400(sockfd);
-		if(toLog) {
-			writeErrorLog("400 Bad Request", request, logFile);
+		if(toLog > 0) {
+			writeInfoLog(LOG_400, NULL);
 		}
 		return -1;
 	}
@@ -216,23 +220,23 @@ int respond(struct server_setting *s, int sockfd, struct browser_request *reques
 
 		if(extension == NULL) {
 			error_415(sockfd);
-			if(toLog) {
-				writeErrorLog("415 Unsupported Media Type", request, logFile);
+			if(toLog > 0) {
+				writeInfoLog(LOG_415, NULL);
 			}
 			return -1;
 		}
 
 		else if(access(path_to_file, F_OK) == -1) {
 			error_404(sockfd);
-			if(toLog) {
-				writeErrorLog("404 File Not Found", request, logFile);
+			if(toLog > 0) {
+				writeInfoLog(LOG_404, request);
 			}
 			return 0;
 		}
 
 		else if(strcasecmp(request->method, "HEAD") == 0) {
 			send_header(sockfd, path_to_file, extension);
-			return -1;
+			return 0;
 		}
 
 		else {

@@ -3,9 +3,9 @@
 #include <unistd.h>
 
 //Struct used for type file
-struct extn{
+typedef struct extn{
 	char *ext;
 	char *mediatype;
-};
-struct extn *extensions;
+} MIME;
+MIME *extensions;
 

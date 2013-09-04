@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-struct browser_request{
+typedef struct client_request{
 	char *method;
 	char *file_requested;
 	char *user_agent;
@@ -10,12 +10,12 @@ struct browser_request{
 	char *http_version;
 	char *host;
 	int accept_quality;
-};
+}HTTP_CONN;
 
 int get_quality_factor(char *accept_type);
 
-void parse_request(char *line, struct browser_request *request);
+void parse_request(char *line, HTTP_CONN *request);
 
-void parse_first_line(char *line, struct browser_request *request);
+void parse_first_line(char *line, HTTP_CONN *request);
 
-struct browser_request *parse_browser_request(char *message);
+HTTP_CONN *parse_client_request(char *message);

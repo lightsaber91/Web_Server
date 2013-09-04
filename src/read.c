@@ -18,6 +18,8 @@ int read_request(int sockfd, char *buf, bool req) {
 	}while(rec > 0);
 	if(req == true) {
 		error_408(sockfd);
+		if(toLog > -1)
+			writeInfoLog(LOG_408, NULL);
 	}
 	return 0;	 
 }
