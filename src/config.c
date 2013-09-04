@@ -126,8 +126,11 @@ SETTING *parse_config_file() {
 	//Open conf file
 	FILE *conf = fopen(conf_file, "r");
 	if(conf == NULL) {
-		perror("Configuration File NOT FOUND\n");
-		exit(EXIT_FAILURE);
+		conf = fopen(conf_file_opt, "r");
+		if(conf == NULL) {
+			perror("Configuration File NOT FOUND\n");
+			exit(EXIT_FAILURE);
+		}
 	}
 
 	while(1) {

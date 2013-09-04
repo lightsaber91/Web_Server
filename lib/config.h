@@ -1,6 +1,7 @@
 /**
  * The config file will be located in the same directory of server
  */
+#define conf_file_opt "/opt/tvs/server.conf"
 #define conf_file "./server.conf"
 
 /**
