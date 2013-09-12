@@ -4,7 +4,7 @@ WANDCONFIG=`Wand-config --ldflags --libs`
 XMLFLAG=`xml2-config --cflags --libs`
 CFLAGS = -W -Wall -Wextra -O2
 CFILES= src/main.c
-PROGS=server
+PROGS=web_server
 PREFIX=/opt/tvs/
 BIN=/usr/bin/
 

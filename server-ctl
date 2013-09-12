@@ -1,4 +1,7 @@
 #! /bin/sh
+#
+#Dichiaro variabili:
+pid_server=`pgrep web_server`
 
 if [ $# -eq 0 ] 
 then
@@ -11,24 +14,42 @@ then
 else
 	if [ X"start" = X$1 ]; 
 	then 
-		echo Launching the server ...
-		/opt/tvs/server &
-		echo Done!
+		if [ X"$pid_server" = X"" ]
+		then
+			echo Launching the server ...
+			/opt/tvs/web_server &
+			echo Done!
+		else
+			echo Server alredy running!
+		fi
 	fi
 	if [ X"restart" = X$1 ]
 	then 
-		echo Stopping the server ...
-		killall server
-		echo Done!
-		echo Launching the server ...
-		/opt/tvs/server &
-		echo Done!		
+		if [ X"$pid_server" = X"" ]
+		then 
+			echo Server not running.
+			echo Server will now be launched.
+			/opt/tvs/web_server &
+			echo Done!
+		else
+			echo Stopping the server ...
+			kill $pid_server
+			echo Done!
+			echo Launching the server ...
+			/opt/tvs/web_server &
+			echo Done!
+		fi
 	fi
 	if [ X"stop" = X$1 ]
 	then
-		echo Stopping the server ...
-		killall server
-		echo Done!
+		if [ X"$pid_server" = X"" ]
+		then 
+			echo Server not running.
+		else
+			echo Stopping the server ...
+			kill $pid_server
+			echo Done!
+		fi	
 	fi
 	if [ X"clear" = X$1 ]
 	then
