@@ -49,6 +49,7 @@ void *manage_connection(void *p){
 		if(in_request == NULL) {
 			break;
 		}
+
 		if(read_request(job->socket, in_request, firstReq) != 1) {
 			break; 
 		}

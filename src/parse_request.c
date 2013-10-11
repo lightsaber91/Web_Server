@@ -25,22 +25,22 @@ int get_quality_factor(char *accept_type) {
  */
 void parse_request(char *line, HTTP_CONN *request) {
 
-        if(strncmp(line, "User-Agent: ", 12) == 0) {
-                strtok(line, " ");
+	if(strncmp(line, "User-Agent: ", 12) == 0) {
+		strtok(line, " ");
 		request->user_agent = strtok(NULL, "\n\r");
-        }
+  }
 	else if(strncmp(line, "Connection: ", 12) == 0) {
 		strtok(line, " ");
 		request->connection_type = strtok(NULL, "\n\r");
 	}
-        else if(strncmp(line, "Host: ", 6) == 0) {
-                strtok(line, " ");
-                request->host = strtok(NULL, "\n\r");
-        }
-        else if(strncmp(line, "Accept: ", 8) == 0) {
-                strtok(line, " ");
-                request->accept_quality = get_quality_factor(strtok(NULL, "\n\r"));
-        }
+  else if(strncmp(line, "Host: ", 6) == 0) {
+  	strtok(line, " ");
+    request->host = strtok(NULL, "\n\r");
+  }
+  else if(strncmp(line, "Accept: ", 8) == 0) {
+  	strtok(line, " ");
+    request->accept_quality = get_quality_factor(strtok(NULL, "\n\r"));
+  }
 }
 
 /**
@@ -65,6 +65,7 @@ HTTP_CONN *parse_client_request(char *message) {
 		perror("Memory Allocation Failure");
 		return NULL;
 	}
+	request->user_agent = "null";
 	char *line, *save_pointer;
 	line = strtok_r(message, "\n\r", &save_pointer);
 	parse_first_line(line, request);
